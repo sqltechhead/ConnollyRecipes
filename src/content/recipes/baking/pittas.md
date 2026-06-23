@@ -1,0 +1,29 @@
+---
+title: "Pittas"
+date: 2024-08-30
+category: breads
+tags: ["Breads"]
+image: assets/images/Pitta.jpg
+servings: 4
+---
+
+## Ingredients
+- [ ] 500g strong white bread flour,
+- [ ] 10g Salt
+- [ ] 12g Dried Yeast
+- [ ] 280g Water
+- [ ] 20 Olive Oil
+	
+
+## Method
+1. Mix the flour with the salt.
+2. Add the yeast in once the salt is combined.
+3. Add the oil and the water and mix by hand or in a mixer. 
+4. Once combined knead for 5 minutes
+5. Oil a bowl and add the dough to it, cover with a tea towel. and then allow to rise for an hour.
+6. Within that rising time ensure you warm your oven to 240 degrees and add a pizza stone. 
+6. Once risen divide the dough
+   - 80g for normal pitta. Makes 10 pittas
+   - 130g for a larger doughier pitta (great for fakeaways). Makes 6 pittas
+7. Place on the pizza stone, as many as you can fit on
+8. Cook for 5 minutes and repeat

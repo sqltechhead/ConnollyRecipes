@@ -1,0 +1,58 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import RecipeCard from '../components/RecipeCard.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  return ['smoking', 'cakes', 'traybakes', 'breads', 'cooking', 'rubs', 'sauces'].map(cat => ({
+    params: { category: cat },
+  }));
+}
+
+const { category } = Astro.params as { category: string };
+
+const all = await getCollection('recipes', ({ data }) => data.category === category);
+const sorted = all.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const meta: Record<string, { emoji: string; desc: string }> = {
+  smoking:   { emoji: '🔥', desc: 'Low and slow smoked meats' },
+  cakes:     { emoji: '🎂', desc: 'Cakes, tarts and sweet treats' },
+  traybakes: { emoji: '🍫', desc: 'Brownies, slices and tray bakes' },
+  breads:    { emoji: '🍞', desc: 'Breads, buns and doughs' },
+  cooking:   { emoji: '🍳', desc: 'Everyday cooking' },
+  rubs:      { emoji: '🧂', desc: 'Dry rubs and seasonings' },
+  sauces:    { emoji: '🫙', desc: 'BBQ sauces and condiments' },
+};
+
+const { emoji, desc } = meta[category] ?? { emoji: '🍽️', desc: '' };
+const title = category.charAt(0).toUpperCase() + category.slice(1);
+---
+
+<BaseLayout title={title} description={desc}>
+  <div class="mb-10 pb-6 border-b border-tan-200">
+    <div class="flex items-center gap-3 mb-2">
+      <span class="text-4xl">{emoji}</span>
+      <h1 class="font-serif text-4xl font-bold text-brown-900">{title}</h1>
+    </div>
+    <p class="text-brown-500">{desc} &mdash; {sorted.length} {sorted.length === 1 ? 'recipe' : 'recipes'}</p>
+  </div>
+
+  {sorted.length === 0 ? (
+    <p class="text-brown-500 text-center py-16">No recipes yet — check back soon.</p>
+  ) : (
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {sorted.map(r => (
+        <RecipeCard
+          title={r.data.title}
+          slug={r.slug}
+          category={r.data.category}
+          date={r.data.date}
+          image={r.data.image}
+          cookTime={r.data.cookTime}
+          description={r.data.description}
+          tags={r.data.tags}
+        />
+      ))}
+    </div>
+  )}
+</BaseLayout>

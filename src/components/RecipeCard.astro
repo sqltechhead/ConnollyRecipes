@@ -1,0 +1,58 @@
+---
+interface Props {
+  title: string;
+  slug: string;
+  category: string;
+  date: Date;
+  image?: string;
+  cookTime?: string;
+  description?: string;
+  tags?: string[];
+}
+
+const { title, slug, category, date, image, cookTime, description } = Astro.props;
+const rawBase = import.meta.env.BASE_URL;
+const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
+
+const categoryConfig: Record<string, { badge: string; placeholder: string; label: string }> = {
+  smoking:   { badge: 'bg-terracotta-100 text-terracotta-900', placeholder: '🥩', label: 'Smoking'    },
+  cakes:     { badge: 'bg-sage-100 text-sage-700',             placeholder: '🎂', label: 'Cakes'      },
+  traybakes: { badge: 'bg-sage-100 text-sage-600',             placeholder: '🍫', label: 'Tray Bakes' },
+  breads:    { badge: 'bg-tan-100 text-brown-600',             placeholder: '🍞', label: 'Breads'     },
+  cooking:   { badge: 'bg-tan-100 text-brown-700',             placeholder: '🍳', label: 'Cooking'    },
+  rubs:      { badge: 'bg-amber-100 text-amber-600',           placeholder: '🧂', label: 'Rubs'       },
+  sauces:    { badge: 'bg-terracotta-100 text-terracotta-700', placeholder: '🫙', label: 'Sauces'     },
+};
+
+const cfg = categoryConfig[category] ?? categoryConfig.cooking;
+---
+
+<a
+  href={`${base}recipes/${slug}`}
+  class="group flex flex-col bg-cream-50 rounded-xl overflow-hidden border border-tan-200 hover:border-terracotta-400 hover:shadow-lg transition-all duration-200"
+>
+  <!-- Image or placeholder -->
+  <div class="aspect-[4/3] overflow-hidden bg-cream-200 flex-shrink-0">
+    {image
+      ? <img src={`${base}${image}`} alt={title} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+      : <div class="w-full h-full flex items-center justify-center text-6xl">{cfg.placeholder}</div>
+    }
+  </div>
+
+  <!-- Content -->
+  <div class="p-4 flex flex-col flex-1">
+    <div class="flex items-center justify-between mb-2">
+      <span class:list={['text-xs font-semibold px-2.5 py-0.5 rounded-full uppercase tracking-wide', cfg.badge]}>{cfg.label}</span>
+      {cookTime && <span class="text-xs text-brown-500">⏱ {cookTime}</span>}
+    </div>
+    <h3 class="font-serif text-lg font-semibold text-brown-900 group-hover:text-terracotta-600 transition-colors leading-snug">
+      {title}
+    </h3>
+    {description && (
+      <p class="mt-1.5 text-sm text-brown-600 line-clamp-2 flex-1">{description}</p>
+    )}
+    <p class="mt-3 text-xs text-brown-400">
+      {date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+    </p>
+  </div>
+</a>

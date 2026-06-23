@@ -1,0 +1,10 @@
+# Astro build output
+dist/
+.astro/
+
+# Node
+node_modules/
+
+# Misc
+.DS_Store
+*.log

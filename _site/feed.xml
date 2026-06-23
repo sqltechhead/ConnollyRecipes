@@ -1,0 +1,311 @@
+
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <id>http://localhost:4000/</id>
+  <title>Connolly Smokehouse</title>
+  <subtitle>A site for everything smoking, baking and brewing!</subtitle>
+  <updated>2026-06-23T20:59:01+01:00</updated>
+  <author>
+    <name>Daniel Connolly</name>
+    <uri>http://localhost:4000/</uri>
+  </author>
+  <link rel="self" type="application/atom+xml" href="http://localhost:4000/feed.xml"/>
+  <link rel="alternate" type="text/html" hreflang="en"
+    href="http://localhost:4000/"/>
+  <generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator>
+  <rights> © 2026 Daniel Connolly </rights>
+  <icon>/assets/img/favicons/favicon.ico</icon>
+  <logo>/assets/img/favicons/favicon-96x96.png</logo>
+
+
+  
+  <entry>
+    <title>Smoked Gammon</title>
+    <link href="http://localhost:4000/posts/SmokedGammon/" rel="alternate" type="text/html" title="Smoked Gammon" />
+    <published>2024-12-20T13:30:00+00:00</published>
+  
+    <updated>2024-12-20T13:30:00+00:00</updated>
+  
+    <id>http://localhost:4000/posts/SmokedGammon/</id>
+    <content src="http://localhost:4000/posts/SmokedGammon/" />
+    <author>
+      <name>Daniel Connolly</name>
+    </author>
+
+  
+    
+    <category term="Smoking" />
+    
+    <category term="Pork" />
+    
+  
+
+  
+    <summary>
+      
+
+
+
+
+
+      Ingredients
+Dry Rub
+
+  2 tbsp English mustard/American Mustard
+  1 tbsp smoked paprika
+  2 tbsp soft brown sugar
+  1 tbsp garlic powder
+  2 tsp sea salt
+  1 tsp dried sage
+  1 tsp dried thyme
+
+
+Meat
+
+  4lb Unsmoked Gammon Joint
+
+
+Glaze
+
+  3 tbsp Honey
+  1 tbsp Whiskey
+
+
+Method
+
+  Cut off any skin then cover the meat with mustard, then rub the dry rub into the gammon all over.
+  Get your BBQ/Smo...
+    </summary>
+  
+
+  </entry>
+
+  
+  <entry>
+    <title>Gold Bar Fudge</title>
+    <link href="http://localhost:4000/posts/GoldBarFudge/" rel="alternate" type="text/html" title="Gold Bar Fudge" />
+    <published>2024-12-04T13:30:00+00:00</published>
+  
+    <updated>2024-12-04T13:30:00+00:00</updated>
+  
+    <id>http://localhost:4000/posts/GoldBarFudge/</id>
+    <content src="http://localhost:4000/posts/GoldBarFudge/" />
+    <author>
+      <name>Daniel Connolly</name>
+    </author>
+
+  
+    
+    <category term="Baking" />
+    
+    <category term="Cakes" />
+    
+  
+
+  
+    <summary>
+      
+
+
+
+
+
+      Ingredients
+
+  397g Tin Condensed Milk
+  600g White Chocolate
+  2tsp Vanilla Extract
+  14 Gold Bars
+
+
+Method
+
+  Line a 24cm Square tin with baking paper
+  Put the condensed milk, white chocolate and vanilla extract in a saucepan and heat slowly
+  Once all combined take off the heat
+  Cut up half of the gold bars and mix with the mixture
+  Spoon into the tin and flatten
+  Decide how many slices ...
+    </summary>
+  
+
+  </entry>
+
+  
+  <entry>
+    <title>Christmas Cake</title>
+    <link href="http://localhost:4000/posts/ChristmasCake/" rel="alternate" type="text/html" title="Christmas Cake" />
+    <published>2024-11-17T13:30:00+00:00</published>
+  
+    <updated>2024-11-17T13:30:00+00:00</updated>
+  
+    <id>http://localhost:4000/posts/ChristmasCake/</id>
+    <content src="http://localhost:4000/posts/ChristmasCake/" />
+    <author>
+      <name>Daniel Connolly</name>
+    </author>
+
+  
+    
+    <category term="Baking" />
+    
+    <category term="Cakes" />
+    
+  
+
+  
+    <summary>
+      
+
+
+
+
+
+      Ingredients
+Cake
+
+  525g Currants
+  225g Sultanas
+  225g Raisins
+  110g Mixed candied peel
+  165g Glace cherries, halved
+  300g Plain flour
+  Pinch salt
+  ½ tsp Mixed spice
+  ½ tsp Ground cinnamon
+  ½ tsp Ground nutmeg
+  300g Butter, slightly softened
+  300g Soft brown sugar
+  Zest of 1 lemon
+  6 large eggs, beaten
+  3 Tablespoon brandy
+
+
+Feeding
+
+  Brandy, 2 tbsp per week
+
+
+Marzipan
+
+  400g Ma...
+    </summary>
+  
+
+  </entry>
+
+  
+  <entry>
+    <title>Pittas</title>
+    <link href="http://localhost:4000/posts/Pittas/" rel="alternate" type="text/html" title="Pittas" />
+    <published>2024-08-30T14:30:00+01:00</published>
+  
+    <updated>2024-08-30T14:30:00+01:00</updated>
+  
+    <id>http://localhost:4000/posts/Pittas/</id>
+    <content src="http://localhost:4000/posts/Pittas/" />
+    <author>
+      <name>Daniel Connolly</name>
+    </author>
+
+  
+    
+    <category term="Baking" />
+    
+    <category term="Breads" />
+    
+  
+
+  
+    <summary>
+      
+
+
+
+
+
+      Ingredients
+
+  500g strong white bread flour,
+  10g Salt
+  12g Dried Yeast
+  280g Water
+  20 Olive Oil
+
+
+Method
+
+  Mix the flour with the salt.
+  Add the yeast in once the salt is combined.
+  Add the oil and the water and mix by hand or in a mixer.
+  Once combined knead for 5 minutes
+  Oil a bowl and add the dough to it, cover with a tea towel. and then allow to rise for an hour.
+  Within that ...
+    </summary>
+  
+
+  </entry>
+
+  
+  <entry>
+    <title>Celebration Cake</title>
+    <link href="http://localhost:4000/posts/CelebrationCake/" rel="alternate" type="text/html" title="Celebration Cake" />
+    <published>2024-08-25T14:30:00+01:00</published>
+  
+    <updated>2024-08-25T14:30:00+01:00</updated>
+  
+    <id>http://localhost:4000/posts/CelebrationCake/</id>
+    <content src="http://localhost:4000/posts/CelebrationCake/" />
+    <author>
+      <name>Daniel Connolly</name>
+    </author>
+
+  
+    
+    <category term="Baking" />
+    
+    <category term="Cakes" />
+    
+  
+
+  
+    <summary>
+      
+
+
+
+
+
+      Ingredients
+Cake
+
+  575g Margarine
+  575g Caster Sugar
+  575g Self Raising Flour
+  10 Eggs
+  2tsp Vanilla Extract
+  4tsp Baking Powder
+  4tbsp Milk
+  Food Colouring if applicable
+
+
+Butter Cream
+
+  285g Softened Butter
+  575g Icing Sugar
+  4tbsp Milk
+
+
+Method
+Cake
+
+  Mix the margarine with the sugar until combined.
+  Add in the eggs and self raising flour a little at a time to ensure no curdling...
+    </summary>
+  
+
+  </entry>
+
+</feed>
+
+

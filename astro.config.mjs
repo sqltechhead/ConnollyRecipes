@@ -2,21 +2,11 @@ import { defineConfig } from 'astro/config';
 import tailwind from '@astrojs/tailwind';
 import { visit } from 'unist-util-visit';
 
-const BASE = '/ConnollyRecipes';
-
-// Rewrite absolute image paths to include the base path
+// Rewrite absolute image paths — no-op now that base is '/', kept for Jekyll attribute stripping
 function remarkPrefixImages() {
   return function (tree) {
-    visit(tree, 'image', function (node) {
-      if (node.url && node.url.startsWith('/') && !node.url.startsWith(BASE)) {
-        node.url = BASE + node.url;
-      }
-    });
-    visit(tree, 'link', function (node) {
-      if (node.url && node.url.startsWith('/') && !node.url.startsWith(BASE)) {
-        node.url = BASE + node.url;
-      }
-    });
+    visit(tree, 'image', function () {});
+    visit(tree, 'link', function () {});
     // Also strip Jekyll image attributes like {: .dark .w-75 .normal }
     visit(tree, 'paragraph', function (node) {
       if (node.children) {
@@ -31,8 +21,8 @@ function remarkPrefixImages() {
 }
 
 export default defineConfig({
-  site: 'https://sqltechhead.github.io/ConnollyRecipes',
-  base: BASE,
+  site: 'https://connollyrecipes.co.uk',
+  base: '/',
   integrations: [tailwind()],
   markdown: {
     remarkPlugins: [remarkPrefixImages],

@@ -5,7 +5,6 @@ import { getCollection } from 'astro:content';
 
 const all = await getCollection('recipes');
 const sorted = all.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
-const latest = sorted.slice(0, 6);
 
 const rawBase = import.meta.env.BASE_URL;
 const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
@@ -19,47 +18,115 @@ const categories = [
   { name: 'Rubs',       slug: 'rubs',      emoji: '🧂', desc: 'Dry rubs and seasonings' },
   { name: 'Sauces',     slug: 'sauces',    emoji: '🫙', desc: 'BBQ sauces and condiments' },
 ];
+
+const categoryEmoji: Record<string, string> = {
+  smoking: '🔥', cakes: '🎂', traybakes: '🍫',
+  breads: '🍞', cooking: '🍳', rubs: '🧂', sauces: '🫙',
+};
+
+const featured = sorted.find(r => r.data.image) ?? sorted[0];
+const DEFAULT_SHOW = 9;
 ---
 
 <BaseLayout title="Home">
 
-  <!-- Hero -->
-  <div class="text-center py-10 sm:py-16 mb-10 sm:mb-14">
-    <h1 class="font-serif text-5xl sm:text-6xl font-bold text-brown-900 mb-4 leading-tight">
-      Connolly Recipes
-    </h1>
-    <p class="text-brown-600 text-lg max-w-lg mx-auto leading-relaxed">
-      Straight to the point recipes — no life stories, no filler.<br class="hidden sm:block"/>
-      Just smoking, baking and cooking.
-    </p>
-    <div class="mt-6 w-16 h-0.5 bg-terracotta-500 mx-auto rounded-full"></div>
-  </div>
+  <!-- Hero spotlight -->
+  {featured && (
+    <section class="mb-12 fade-up">
+      <a
+        href={`${base}recipes/${featured.slug}`}
+        class="group relative block w-full rounded-2xl overflow-hidden shadow-xl border border-tan-200 dark:border-brown-700"
+        style="min-height: 280px;"
+      >
+        {featured.data.image ? (
+          <>
+            <img
+              src={`${base}${featured.data.image}`}
+              alt={featured.data.title}
+              class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-brown-950/90 via-brown-950/40 to-transparent"></div>
+          </>
+        ) : (
+          <div class="absolute inset-0 flex items-center justify-center text-8xl" style="background: linear-gradient(135deg, #2c1810 0%, #8b4513 100%);">
+            {categoryEmoji[featured.data.category] ?? '🍽️'}
+          </div>
+        )}
+        <div class="relative flex flex-col justify-end h-full p-6 sm:p-8" style="min-height: 280px;">
+          <span class="inline-block text-xs font-semibold uppercase tracking-widest text-terracotta-300 mb-2">Featured recipe</span>
+          <h2 class="font-serif text-3xl sm:text-4xl font-bold text-cream-100 leading-tight mb-2 group-hover:text-terracotta-200 transition-colors">
+            {featured.data.title}
+          </h2>
+          {featured.data.description && (
+            <p class="text-cream-200 text-sm sm:text-base max-w-xl line-clamp-2 opacity-90">{featured.data.description}</p>
+          )}
+          <span class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-terracotta-300 group-hover:gap-3 transition-all">
+            View recipe <span>→</span>
+          </span>
+        </div>
+      </a>
+    </section>
+  )}
+
+  <!-- Search + Favourites filter -->
+  <section class="mb-10 fade-up" data-delay="1">
+    <div class="flex gap-3 items-center">
+      <div class="relative flex-1">
+        <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-brown-400 dark:text-cream-300 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
+        </svg>
+        <input
+          id="search"
+          type="search"
+          placeholder={`Search ${all.length} recipes…`}
+          class="w-full pl-12 pr-10 py-3.5 rounded-xl border-2 border-tan-200 dark:border-brown-700 bg-cream-50 dark:bg-brown-900 text-brown-900 dark:text-cream-100 placeholder-brown-400 dark:placeholder-cream-300 focus:outline-none focus:border-terracotta-400 dark:focus:border-terracotta-500 text-base transition-colors"
+        />
+        <span id="search-count" class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-brown-400 dark:text-cream-300 hidden"></span>
+      </div>
+      <!-- Favourites filter -->
+      <button
+        id="fav-filter"
+        aria-label="Show favourites"
+        class="flex-shrink-0 flex items-center gap-2 px-4 py-3.5 rounded-xl border-2 border-tan-200 dark:border-brown-700 bg-cream-50 dark:bg-brown-900 text-brown-600 dark:text-cream-200 hover:border-terracotta-400 dark:hover:border-terracotta-500 transition-colors text-sm font-medium"
+      >
+        <svg id="fav-filter-heart-empty" class="w-5 h-5 text-brown-400 dark:text-cream-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+        </svg>
+        <svg id="fav-filter-heart-filled" class="w-5 h-5 text-terracotta-500 hidden" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+        </svg>
+        <span class="hidden sm:inline">Favourites</span>
+      </button>
+    </div>
+  </section>
 
   <!-- Category grid -->
-  <section class="mb-14">
-    <h2 class="font-serif text-2xl text-brown-800 mb-5">Browse by category</h2>
+  <section id="cat-section" class="mb-14">
+    <h2 class="font-serif text-2xl text-brown-800 dark:text-cream-100 mb-5 fade-up" data-delay="2">Browse by category</h2>
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-      {categories.map(({ name, slug, emoji, desc }) => (
+      {categories.map(({ name, slug, emoji, desc }, i) => (
         <a
           href={`${base}${slug}`}
-          class="flex flex-col items-center justify-center gap-2 p-5 rounded-xl border-2 border-tan-200 bg-cream-50 hover:border-terracotta-400 hover:bg-terracotta-100 transition-all duration-200 group text-center"
+          class="fade-up flex flex-col items-center justify-center gap-2 p-5 rounded-xl border-2 border-tan-200 dark:border-brown-700 bg-cream-50 dark:bg-brown-900 hover:border-terracotta-400 hover:bg-terracotta-100 dark:hover:bg-brown-800 transition-all duration-200 group text-center"
+          data-delay={String(i + 1)}
         >
           <span class="text-3xl">{emoji}</span>
-          <span class="font-serif font-semibold text-brown-900 group-hover:text-terracotta-700 transition-colors">{name}</span>
-          <span class="text-xs text-brown-500 leading-tight hidden sm:block">{desc}</span>
+          <span class="font-serif font-semibold text-brown-900 dark:text-cream-100 group-hover:text-terracotta-700 dark:group-hover:text-terracotta-300 transition-colors">{name}</span>
+          <span class="text-xs text-brown-500 dark:text-cream-300 leading-tight hidden sm:block">{desc}</span>
         </a>
       ))}
     </div>
   </section>
 
-  <!-- Latest recipes -->
-  <section>
+  <!-- Recipe grid -->
+  <section id="recipe-section">
     <div class="flex items-baseline justify-between mb-5">
-      <h2 class="font-serif text-2xl text-brown-800">Latest recipes</h2>
-      <span class="text-sm text-brown-500">{all.length} recipes total</span>
+      <h2 id="section-title" class="font-serif text-2xl text-brown-800 dark:text-cream-100">Latest recipes</h2>
+      <span class="text-sm text-brown-500 dark:text-cream-300">{all.length} recipes total</span>
     </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-      {latest.map(r => (
+
+    <div id="recipe-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {sorted.map((r, i) => (
         <RecipeCard
           title={r.data.title}
           slug={r.slug}
@@ -69,9 +136,108 @@ const categories = [
           cookTime={r.data.cookTime}
           description={r.data.description}
           tags={r.data.tags}
+          delay={((i % 3) + 1) as 1 | 2 | 3}
         />
       ))}
     </div>
+
+    <p id="no-results" class="hidden text-center py-16 text-brown-500 dark:text-cream-300">
+      No recipes found — try a different search.
+    </p>
+    <p id="no-favourites" class="hidden text-center py-16 text-brown-500 dark:text-cream-300">
+      No favourites yet — tap the ♥ on any recipe to save it here.
+    </p>
   </section>
 
 </BaseLayout>
+
+<script>
+  const input       = document.getElementById('search') as HTMLInputElement;
+  const cards       = document.querySelectorAll<HTMLElement>('.recipe-card');
+  const catSection  = document.getElementById('cat-section');
+  const sectionTitle = document.getElementById('section-title');
+  const searchCount = document.getElementById('search-count');
+  const noResults   = document.getElementById('no-results');
+  const noFavs      = document.getElementById('no-favourites');
+  const favFilter   = document.getElementById('fav-filter');
+  const favEmpty    = document.getElementById('fav-filter-heart-empty');
+  const favFilled   = document.getElementById('fav-filter-heart-filled');
+  const DEFAULT_SHOW = 9;
+
+  let favMode = false;
+
+  // Hide cards beyond default on load
+  cards.forEach((card, i) => {
+    if (i >= DEFAULT_SHOW) card.classList.add('hidden');
+  });
+
+  function showDefault() {
+    catSection?.classList.remove('hidden');
+    if (sectionTitle) sectionTitle.textContent = 'Latest recipes';
+    if (searchCount) { searchCount.textContent = ''; searchCount.classList.add('hidden'); }
+    noResults?.classList.add('hidden');
+    noFavs?.classList.add('hidden');
+    cards.forEach((card, i) => card.classList.toggle('hidden', i >= DEFAULT_SHOW));
+  }
+
+  // ── Search ──────────────────────────────────────────────────────────────────
+  input?.addEventListener('input', () => {
+    const q = input.value.toLowerCase().trim();
+
+    // Exit fav mode when searching
+    if (favMode) {
+      favMode = false;
+      favEmpty?.classList.remove('hidden');
+      favFilled?.classList.add('hidden');
+      favFilter?.classList.remove('border-terracotta-400');
+    }
+
+    if (!q) { showDefault(); return; }
+
+    catSection?.classList.add('hidden');
+    if (sectionTitle) sectionTitle.textContent = 'Search results';
+
+    let count = 0;
+    cards.forEach(card => {
+      const match = (card.dataset.search ?? '').includes(q);
+      card.classList.toggle('hidden', !match);
+      if (match) { card.classList.add('visible'); count++; }
+    });
+
+    if (searchCount) {
+      searchCount.textContent = count > 0 ? `${count} found` : '';
+      searchCount.classList.toggle('hidden', count === 0);
+    }
+    noResults?.classList.toggle('hidden', count > 0);
+    noFavs?.classList.add('hidden');
+  });
+
+  // ── Favourites filter ───────────────────────────────────────────────────────
+  favFilter?.addEventListener('click', () => {
+    favMode = !favMode;
+
+    favEmpty?.classList.toggle('hidden', favMode);
+    favFilled?.classList.toggle('hidden', !favMode);
+    favFilter.classList.toggle('border-terracotta-400', favMode);
+    favFilter.classList.toggle('dark:border-terracotta-500', favMode);
+
+    if (input) input.value = '';
+    if (searchCount) { searchCount.textContent = ''; searchCount.classList.add('hidden'); }
+
+    if (!favMode) { showDefault(); return; }
+
+    const favs = JSON.parse(localStorage.getItem('fav-recipes') ?? '[]') as string[];
+    catSection?.classList.add('hidden');
+    if (sectionTitle) sectionTitle.textContent = 'Favourites';
+
+    let count = 0;
+    cards.forEach(card => {
+      const match = favs.includes(card.dataset.slug ?? '');
+      card.classList.toggle('hidden', !match);
+      if (match) { card.classList.add('visible'); count++; }
+    });
+
+    noFavs?.classList.toggle('hidden', count > 0);
+    noResults?.classList.add('hidden');
+  });
+</script>

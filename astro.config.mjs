@@ -12,6 +12,11 @@ function remarkPrefixImages() {
         node.url = BASE + node.url;
       }
     });
+    visit(tree, 'link', function (node) {
+      if (node.url && node.url.startsWith('/') && !node.url.startsWith(BASE)) {
+        node.url = BASE + node.url;
+      }
+    });
     // Also strip Jekyll image attributes like {: .dark .w-75 .normal }
     visit(tree, 'paragraph', function (node) {
       if (node.children) {

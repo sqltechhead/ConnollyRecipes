@@ -13,13 +13,13 @@ Another tip is to make sure you have your timings documented and printed so you 
 
 ## Food List
 ### Savoury
-- [ ] [Turkey](https://grillingandbrewing.co.uk/posts/Turkey/)
-- [ ] [Sausage Meat Stuffing](https://grillingandbrewing.co.uk/posts/SausageMeatStuffing/)
-- [ ] [Pigs in blankets](https://grillingandbrewing.co.uk/posts/PigsInBlankets/)
-- [ ] [Vegetables](https://grillingandbrewing.co.uk/posts/Vegetables/)
-- [ ] [Bacon Sprouts](https://grillingandbrewing.co.uk/posts/BaconSprouts/)
-- [ ] [Yorkshire Puddings](https://grillingandbrewing.co.uk/posts/YorkshirePuddings/)
-- [ ] [Honey glazed carrot and parsnips](https://grillingandbrewing.co.uk/posts/HoneyGlazedCarrotAndParsnips/)
+- [ ] [Turkey](/recipes/cooking/turkey)
+- [ ] [Sausage Meat Stuffing](/recipes/cooking/sausagemeatstuffing)
+- [ ] [Pigs in Blankets](/recipes/cooking/pigsinblankets)
+- [ ] [Vegetables](/recipes/cooking/vegetables)
+- [ ] [Bacon Sprouts](/recipes/cooking/baconsprouts)
+- [ ] [Yorkshire Puddings](/recipes/cooking/yorkshirepuddings)
+- [ ] [Honey Glazed Carrot and Parsnips](/recipes/cooking/honeyglazedcarrotandparsnips)
 - [ ] Bread Sauce
 
 ### Sweet

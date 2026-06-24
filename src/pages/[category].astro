@@ -14,34 +14,49 @@ const { category } = Astro.params as { category: string };
 const all = await getCollection('recipes', ({ data }) => data.category === category);
 const sorted = all.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 
-const meta: Record<string, { emoji: string; desc: string }> = {
-  smoking:   { emoji: '🔥', desc: 'Low and slow smoked meats' },
-  cakes:     { emoji: '🎂', desc: 'Cakes, tarts and sweet treats' },
-  traybakes: { emoji: '🍫', desc: 'Brownies, slices and tray bakes' },
-  breads:    { emoji: '🍞', desc: 'Breads, buns and doughs' },
-  cooking:   { emoji: '🍳', desc: 'Everyday cooking' },
-  rubs:      { emoji: '🧂', desc: 'Dry rubs and seasonings' },
-  sauces:    { emoji: '🫙', desc: 'BBQ sauces and condiments' },
+const meta: Record<string, { emoji: string; desc: string; gradient: string }> = {
+  smoking:   { emoji: '🔥', desc: 'Low and slow smoked meats',        gradient: 'linear-gradient(135deg, #431407 0%, #9a3412 60%, #c2410c 100%)' },
+  cakes:     { emoji: '🎂', desc: 'Cakes, tarts and sweet treats',     gradient: 'linear-gradient(135deg, #4a044e 0%, #86198f 60%, #c026d3 100%)' },
+  traybakes: { emoji: '🍫', desc: 'Brownies, slices and tray bakes',   gradient: 'linear-gradient(135deg, #1c1917 0%, #44403c 60%, #78716c 100%)' },
+  breads:    { emoji: '🍞', desc: 'Breads, buns and doughs',           gradient: 'linear-gradient(135deg, #451a03 0%, #92400e 60%, #b45309 100%)' },
+  cooking:   { emoji: '🍳', desc: 'Everyday cooking',                  gradient: 'linear-gradient(135deg, #052e16 0%, #166534 60%, #15803d 100%)' },
+  rubs:      { emoji: '🧂', desc: 'Dry rubs and seasonings',           gradient: 'linear-gradient(135deg, #431407 0%, #c2410c 40%, #d97706 100%)' },
+  sauces:    { emoji: '🫙', desc: 'BBQ sauces and condiments',         gradient: 'linear-gradient(135deg, #450a0a 0%, #991b1b 60%, #dc2626 100%)' },
 };
 
-const { emoji, desc } = meta[category] ?? { emoji: '🍽️', desc: '' };
+const { emoji, desc, gradient } = meta[category] ?? { emoji: '🍽️', desc: '', gradient: 'linear-gradient(135deg, #2c1810, #8b4513)' };
 const title = category.charAt(0).toUpperCase() + category.slice(1);
+const rawBase = import.meta.env.BASE_URL;
 ---
 
 <BaseLayout title={title} description={desc}>
-  <div class="mb-10 pb-6 border-b border-tan-200">
-    <div class="flex items-center gap-3 mb-2">
-      <span class="text-4xl">{emoji}</span>
-      <h1 class="font-serif text-4xl font-bold text-brown-900">{title}</h1>
+
+  <!-- Category banner -->
+  <div class="fade-up -mx-4 sm:-mx-6 -mt-8 sm:-mt-12 mb-10 sm:mb-12 rounded-b-2xl overflow-hidden" style={`background: ${gradient};`}>
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-16 flex items-end justify-between gap-5 flex-wrap">
+      <div class="flex items-end gap-5">
+        <span class="text-6xl sm:text-7xl drop-shadow-lg">{emoji}</span>
+        <div>
+          <h1 class="font-serif text-4xl sm:text-5xl font-bold text-white leading-tight">{title}</h1>
+          <p class="text-white/80 mt-1 text-base sm:text-lg">{desc} &mdash; {sorted.length} {sorted.length === 1 ? 'recipe' : 'recipes'}</p>
+        </div>
+      </div>
+      {category === 'smoking' && (
+        <a
+          href={`${rawBase.endsWith('/') ? rawBase : rawBase + '/'}smoking-temps`}
+          class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 text-white text-sm font-semibold transition-colors backdrop-blur-sm border border-white/20 self-end mb-1"
+        >
+          🌡️ Temperature Guide
+        </a>
+      )}
     </div>
-    <p class="text-brown-500">{desc} &mdash; {sorted.length} {sorted.length === 1 ? 'recipe' : 'recipes'}</p>
   </div>
 
   {sorted.length === 0 ? (
-    <p class="text-brown-500 text-center py-16">No recipes yet — check back soon.</p>
+    <p class="text-brown-500 dark:text-cream-300 text-center py-16">No recipes yet — check back soon.</p>
   ) : (
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-      {sorted.map(r => (
+      {sorted.map((r, i) => (
         <RecipeCard
           title={r.data.title}
           slug={r.slug}
@@ -51,6 +66,7 @@ const title = category.charAt(0).toUpperCase() + category.slice(1);
           cookTime={r.data.cookTime}
           description={r.data.description}
           tags={r.data.tags}
+          delay={((i % 3) + 1) as 1 | 2 | 3}
         />
       ))}
     </div>

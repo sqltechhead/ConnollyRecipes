@@ -8,51 +8,72 @@ interface Props {
   cookTime?: string;
   description?: string;
   tags?: string[];
+  delay?: number;
 }
 
-const { title, slug, category, date, image, cookTime, description } = Astro.props;
+const { title, slug, category, date, image, cookTime, description, tags, delay } = Astro.props;
 const rawBase = import.meta.env.BASE_URL;
 const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
 
-const categoryConfig: Record<string, { badge: string; placeholder: string; label: string }> = {
-  smoking:   { badge: 'bg-terracotta-100 text-terracotta-900', placeholder: '🥩', label: 'Smoking'    },
-  cakes:     { badge: 'bg-sage-100 text-sage-700',             placeholder: '🎂', label: 'Cakes'      },
-  traybakes: { badge: 'bg-sage-100 text-sage-600',             placeholder: '🍫', label: 'Tray Bakes' },
-  breads:    { badge: 'bg-tan-100 text-brown-600',             placeholder: '🍞', label: 'Breads'     },
-  cooking:   { badge: 'bg-tan-100 text-brown-700',             placeholder: '🍳', label: 'Cooking'    },
-  rubs:      { badge: 'bg-amber-100 text-amber-600',           placeholder: '🧂', label: 'Rubs'       },
-  sauces:    { badge: 'bg-terracotta-100 text-terracotta-700', placeholder: '🫙', label: 'Sauces'     },
+const categoryConfig: Record<string, { badge: string; darkBadge: string; placeholder: string; label: string }> = {
+  smoking:   { badge: 'bg-terracotta-100 text-terracotta-900', darkBadge: 'dark:bg-brown-800 dark:text-terracotta-300', placeholder: '🥩', label: 'Smoking'    },
+  cakes:     { badge: 'bg-sage-100 text-sage-700',             darkBadge: 'dark:bg-brown-800 dark:text-sage-300',       placeholder: '🎂', label: 'Cakes'      },
+  traybakes: { badge: 'bg-sage-100 text-sage-600',             darkBadge: 'dark:bg-brown-800 dark:text-sage-300',       placeholder: '🍫', label: 'Tray Bakes' },
+  breads:    { badge: 'bg-tan-100 text-brown-600',             darkBadge: 'dark:bg-brown-800 dark:text-cream-200',      placeholder: '🍞', label: 'Breads'     },
+  cooking:   { badge: 'bg-tan-100 text-brown-700',             darkBadge: 'dark:bg-brown-800 dark:text-cream-200',      placeholder: '🍳', label: 'Cooking'    },
+  rubs:      { badge: 'bg-amber-100 text-amber-600',           darkBadge: 'dark:bg-brown-800 dark:text-amber-400',      placeholder: '🧂', label: 'Rubs'       },
+  sauces:    { badge: 'bg-terracotta-100 text-terracotta-700', darkBadge: 'dark:bg-brown-800 dark:text-terracotta-300', placeholder: '🫙', label: 'Sauces'     },
 };
 
 const cfg = categoryConfig[category] ?? categoryConfig.cooking;
+const searchText = [title, description ?? '', category, ...(tags ?? [])].join(' ').toLowerCase();
 ---
 
 <a
   href={`${base}recipes/${slug}`}
-  class="group flex flex-col bg-cream-50 rounded-xl overflow-hidden border border-tan-200 hover:border-terracotta-400 hover:shadow-lg transition-all duration-200"
+  class="recipe-card fade-up group flex flex-col bg-cream-50 dark:bg-brown-900 rounded-xl overflow-hidden border border-tan-200 dark:border-brown-700 hover:border-terracotta-400 dark:hover:border-terracotta-500 hover:shadow-lg dark:hover:shadow-brown-950/50 transition-all duration-200"
+  data-search={searchText}
+  data-slug={slug}
+  data-delay={delay}
 >
-  <!-- Image or placeholder -->
-  <div class="aspect-[4/3] overflow-hidden bg-cream-200 flex-shrink-0">
+  <!-- Image / placeholder -->
+  <div class="relative aspect-[4/3] overflow-hidden bg-cream-200 dark:bg-brown-800 flex-shrink-0">
     {image
       ? <img src={`${base}${image}`} alt={title} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
       : <div class="w-full h-full flex items-center justify-center text-6xl">{cfg.placeholder}</div>
     }
+    <!-- Favourite button -->
+    <button
+      class="fav-btn absolute top-2 right-2 p-1.5 rounded-full bg-white/80 dark:bg-brown-950/80 backdrop-blur-sm shadow-md hover:scale-110 transition-transform text-brown-400 dark:text-cream-300"
+      data-slug={slug}
+      aria-label="Favourite this recipe"
+    >
+      <svg class="fav-heart-empty w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+      </svg>
+      <svg class="fav-heart-filled w-4 h-4 hidden text-terracotta-500" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+      </svg>
+    </button>
   </div>
 
   <!-- Content -->
   <div class="p-4 flex flex-col flex-1">
     <div class="flex items-center justify-between mb-2">
-      <span class:list={['text-xs font-semibold px-2.5 py-0.5 rounded-full uppercase tracking-wide', cfg.badge]}>{cfg.label}</span>
-      {cookTime && <span class="text-xs text-brown-500">⏱ {cookTime}</span>}
+      <span class:list={['text-xs font-semibold px-2.5 py-0.5 rounded-full uppercase tracking-wide', cfg.badge, cfg.darkBadge]}>{cfg.label}</span>
+      {cookTime && <span class="text-xs text-brown-500 dark:text-cream-300">⏱ {cookTime}</span>}
     </div>
-    <h3 class="font-serif text-lg font-semibold text-brown-900 group-hover:text-terracotta-600 transition-colors leading-snug">
+    <h3 class="font-serif text-lg font-semibold text-brown-900 dark:text-cream-100 group-hover:text-terracotta-600 dark:group-hover:text-terracotta-400 transition-colors leading-snug">
       {title}
     </h3>
     {description && (
-      <p class="mt-1.5 text-sm text-brown-600 line-clamp-2 flex-1">{description}</p>
+      <p class="mt-1.5 text-sm text-brown-600 dark:text-cream-300 line-clamp-2 flex-1">{description}</p>
     )}
-    <p class="mt-3 text-xs text-brown-400">
-      {date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-    </p>
+    <div class="mt-3 flex items-center justify-between">
+      <p class="text-xs text-brown-400 dark:text-cream-300 opacity-70">
+        {date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+      </p>
+      <div class="card-rating text-yellow-400 text-xs leading-none tracking-tighter" data-slug={slug} style="display:none"></div>
+    </div>
   </div>
 </a>

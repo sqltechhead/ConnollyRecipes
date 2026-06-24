@@ -11,7 +11,7 @@ servings: 4
 - [ ] Small flat brisket with a fat cap
 
 ### Dry Rub
-- [ ] [BrisketRub]({% link _posts/Rubs/2023-09-24-BrisketRub.md %})
+- [ ] [Brisket Rub](/recipes/rubs/brisketrub)
 
 ### Foil Wrap
 - [ ] 2tbsp Butter

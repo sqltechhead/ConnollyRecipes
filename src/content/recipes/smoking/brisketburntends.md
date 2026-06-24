@@ -11,10 +11,10 @@ servings: 4
 - [ ] 2kg Brisket Point
 
 ### Dry Rub
-- [ ] [BrisketRub]({% link _posts/Rubs/2023-09-24-BrisketRub.md %})
+- [ ] [Brisket Rub](/recipes/rubs/brisketrub)
 
 ### BBQ Sauce
-- [ ] [DRPepperBBQSauce]({% link _posts/Sauces/2024-06-18-DRPepperBBQSauce.md %})
+- [ ] [Dr Pepper BBQ Sauce](/recipes/sauces/drpepperbbqsauce)
 
 ### Foil Wrap
 - [ ] 2tbsp Butter

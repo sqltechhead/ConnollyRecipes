@@ -9,13 +9,13 @@ servings: 4
 
 ## Ingredients
 ### Dry Rub
-- [ ] [PorkRub]({% link _posts/Rubs/2023-09-24-PorkRub.md %})
+- [ ] [Pork Rub](/recipes/rubs/porkrub)
 
 ### Meat
 - [ ] 4kg Pork Shoulder
 
 ### BBQ Sauce
-- [ ] [BBQSauce]({% link _posts/Sauces/2023-09-24-BBQSauce.md %})
+- [ ] [BBQ Sauce](/recipes/sauces/bbqsauce)
 
 ## Method
 1. Rub the rub into the pork shoulder generously. Leave for at least an hour but preferably overnight.

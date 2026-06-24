@@ -7,7 +7,7 @@ servings: 4
 ---
 
 ## Ingredients
-- [ ] [1 large 500g jar mincemeat](https://grillingandbrewing.co.uk/posts/MinceMeat/)
+- [ ] [1 large 500g jar mincemeat](/recipes/baking/mincemeat)
 - [ ] 375g plain flour
 - [ ] 260g unsalted butter, softened
 - [ ] 125g caster sugar, plus extra for sprinkling

@@ -1,0 +1,199 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+const rawBase = import.meta.env.BASE_URL;
+const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
+---
+
+<BaseLayout title="Shopping List" description="Your saved recipe ingredients.">
+  <div class="max-w-2xl mx-auto">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8 fade-up">
+      <h1 class="font-serif text-3xl sm:text-4xl font-bold text-brown-900 dark:text-cream-100">Shopping List</h1>
+      <div class="flex items-center gap-2">
+        <button
+          id="copy-btn"
+          class="flex items-center gap-1.5 text-xs font-semibold text-brown-500 dark:text-cream-300 hover:text-terracotta-600 transition-colors px-3 py-2 rounded-lg border border-tan-200 dark:border-brown-700 hover:border-terracotta-400"
+        >
+          📋 Copy
+        </button>
+        <button
+          id="clear-btn"
+          class="flex items-center gap-1.5 text-xs font-semibold text-brown-500 dark:text-cream-300 hover:text-red-500 transition-colors px-3 py-2 rounded-lg border border-tan-200 dark:border-brown-700 hover:border-red-300"
+        >
+          🗑️ Clear All
+        </button>
+      </div>
+    </div>
+
+    <!-- Dynamic content -->
+    <div id="list-content"></div>
+
+    <!-- Empty state -->
+    <div id="empty-state" class="text-center py-20 text-brown-400 dark:text-cream-300" style="display:none">
+      <p class="text-7xl mb-5">🛒</p>
+      <p class="text-xl font-serif text-brown-700 dark:text-cream-100 mb-2">Your list is empty</p>
+      <p class="text-sm mb-6">Add ingredients from any recipe using the Add to list button.</p>
+      <a href={base} class="inline-block px-6 py-2.5 bg-terracotta-600 hover:bg-terracotta-700 text-white rounded-xl text-sm font-semibold transition-colors">
+        Browse Recipes
+      </a>
+    </div>
+
+    <!-- Summary bar -->
+    <div id="summary" class="text-center py-4 text-sm text-brown-400 dark:text-cream-300 border-t border-tan-200 dark:border-brown-700 mt-4" style="display:none"></div>
+
+  </div>
+</BaseLayout>
+
+<script>
+  interface ShoppingItem {
+    id: string;
+    text: string;
+    recipe: string;
+    slug: string;
+    checked: boolean;
+  }
+
+  document.addEventListener('astro:page-load', () => {
+    const listContent = document.getElementById('list-content')!;
+    const emptyState  = document.getElementById('empty-state') as HTMLElement;
+    const summaryEl   = document.getElementById('summary')    as HTMLElement;
+    const copyBtn     = document.getElementById('copy-btn')   as HTMLButtonElement;
+    const clearBtn    = document.getElementById('clear-btn')  as HTMLButtonElement;
+
+    function getList(): ShoppingItem[] {
+      try { return JSON.parse(localStorage.getItem('shopping-list') ?? '[]'); }
+      catch { return []; }
+    }
+
+    function saveList(items: ShoppingItem[]) {
+      localStorage.setItem('shopping-list', JSON.stringify(items));
+      const badge = document.getElementById('cart-badge') as HTMLElement | null;
+      if (badge) {
+        const count = items.filter(i => !i.checked).length;
+        badge.textContent = count > 0 ? String(count) : '';
+        badge.style.display = count > 0 ? '' : 'none';
+      }
+    }
+
+    function render() {
+      const list = getList();
+
+      if (list.length === 0) {
+        listContent.innerHTML = '';
+        emptyState.style.display = '';
+        summaryEl.style.display = 'none';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+
+      // Group by recipe slug
+      const groups = new Map<string, { recipe: string; items: ShoppingItem[] }>();
+      list.forEach(item => {
+        if (!groups.has(item.slug)) groups.set(item.slug, { recipe: item.recipe, items: [] });
+        groups.get(item.slug)!.items.push(item);
+      });
+
+      let html = '';
+      groups.forEach(({ recipe, items }, slug) => {
+        const checkedCount = items.filter(i => i.checked).length;
+        html += `
+          <div class="mb-8" data-recipe-slug="${slug}">
+            <div class="flex items-center justify-between mb-3 pb-2 border-b border-tan-200 dark:border-brown-700">
+              <div>
+                <h2 class="font-serif text-xl font-bold text-brown-900 dark:text-cream-100">${recipe}</h2>
+                <p class="text-xs text-brown-400 dark:text-cream-300 mt-0.5">${checkedCount}/${items.length} ticked off</p>
+              </div>
+              <button class="remove-recipe-btn text-xs text-brown-400 hover:text-red-500 dark:text-cream-300 dark:hover:text-red-400 transition-colors px-2.5 py-1 rounded-lg border border-tan-200 dark:border-brown-700 hover:border-red-300" data-slug="${slug}">
+                Remove
+              </button>
+            </div>
+            <ul class="space-y-2">
+              ${items.map(item => `
+                <li class="flex items-center gap-3 px-4 py-3 rounded-xl border border-tan-200 dark:border-brown-700 bg-cream-50 dark:bg-brown-900 transition-opacity ${item.checked ? 'opacity-50' : ''}">
+                  <input
+                    type="checkbox"
+                    class="item-check w-4 h-4 flex-shrink-0 cursor-pointer accent-terracotta-600 rounded"
+                    data-id="${item.id}"
+                    ${item.checked ? 'checked' : ''}
+                  />
+                  <span class="flex-1 text-sm text-brown-800 dark:text-cream-100 ${item.checked ? 'line-through' : ''}">${item.text}</span>
+                  <button class="remove-item-btn flex-shrink-0 text-brown-300 dark:text-brown-600 hover:text-red-400 transition-colors" data-id="${item.id}" aria-label="Remove">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                  </button>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+        `;
+      });
+
+      listContent.innerHTML = html;
+
+      listContent.querySelectorAll<HTMLInputElement>('.item-check').forEach(cb => {
+        cb.addEventListener('change', () => {
+          const updated = getList().map(i => i.id === cb.dataset.id ? { ...i, checked: cb.checked } : i);
+          saveList(updated);
+          render();
+        });
+      });
+
+      listContent.querySelectorAll<HTMLButtonElement>('.remove-item-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          saveList(getList().filter(i => i.id !== btn.dataset.id));
+          render();
+        });
+      });
+
+      listContent.querySelectorAll<HTMLButtonElement>('.remove-recipe-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          saveList(getList().filter(i => i.slug !== btn.dataset.slug));
+          render();
+        });
+      });
+
+      const unchecked = list.filter(i => !i.checked).length;
+      summaryEl.style.display = '';
+      summaryEl.textContent = unchecked === 0
+        ? '✓ Everything ticked off!'
+        : `${unchecked} of ${list.length} items remaining`;
+    }
+
+    copyBtn?.addEventListener('click', async () => {
+      const list = getList().filter(i => !i.checked);
+      if (list.length === 0) return;
+
+      const groups = new Map<string, string[]>();
+      list.forEach(i => {
+        if (!groups.has(i.recipe)) groups.set(i.recipe, []);
+        groups.get(i.recipe)!.push(i.text);
+      });
+
+      let text = '';
+      groups.forEach((items, recipe) => {
+        text += `${recipe}:\n${items.map(i => `• ${i}`).join('\n')}\n\n`;
+      });
+
+      try {
+        await navigator.clipboard.writeText(text.trim());
+        copyBtn.textContent = '✓ Copied!';
+        setTimeout(() => { copyBtn.textContent = '📋 Copy'; }, 2000);
+      } catch {
+        copyBtn.textContent = 'Copy failed';
+        setTimeout(() => { copyBtn.textContent = '📋 Copy'; }, 2000);
+      }
+    });
+
+    clearBtn?.addEventListener('click', () => {
+      if (confirm('Clear your entire shopping list?')) {
+        saveList([]);
+        render();
+      }
+    });
+
+    render();
+  });
+</script>

@@ -11,10 +11,10 @@ servings: 4
 - [ ] 300g Pork Belly (No skin)
 
 ### Dry Rub
-- [ ] [PorkRub]({% link _posts/Rubs/2023-09-24-PorkRub.md %})
+- [ ] [Pork Rub](/recipes/rubs/porkrub)
 
 ### BBQ Sauce
-- [ ] [BBQSauce]({% link _posts/Sauces/2023-09-24-BBQSauce.md %})
+- [ ] [BBQ Sauce](/recipes/sauces/bbqsauce)
 
 ### Foil Wrap
 - [ ] 3tbsp Apple Juice

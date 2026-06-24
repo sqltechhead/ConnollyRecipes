@@ -1,0 +1,274 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const rawBase = import.meta.env.BASE_URL;
+const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
+
+interface MeatTemp {
+  meat: string;
+  minC: number;
+  maxC?: number;
+  notes: string;
+  category: 'bbq' | 'poultry' | 'other';
+}
+
+const meatTemps: MeatTemp[] = [
+  { meat: 'Brisket (Point or Flat)',  minC: 90, maxC: 95, notes: 'Probe glides in like warm butter with no resistance', category: 'bbq' },
+  { meat: 'Pulled Pork (Shoulder)',   minC: 93, maxC: 96, notes: 'Bone pulls clean, meat falls apart with tongs',      category: 'bbq' },
+  { meat: 'Pork Spare Ribs',          minC: 90, maxC: 93, notes: 'Bend test — meat cracks when lifted at one end',     category: 'bbq' },
+  { meat: 'Pork Belly Burnt Ends',    minC: 90, maxC: 95, notes: 'Cubes are tender and jiggly',                       category: 'bbq' },
+  { meat: 'Beef Short Ribs',          minC: 93, maxC: 96, notes: 'Probe glides through with no resistance',            category: 'bbq' },
+  { meat: 'Lamb Shoulder',            minC: 90, maxC: 93, notes: 'Pulls apart easily, collagen fully rendered',        category: 'bbq' },
+  { meat: 'Whole Chicken',            minC: 74,            notes: 'Probe into thickest part of thigh, away from bone', category: 'poultry' },
+  { meat: 'Chicken Breast',           minC: 74,            notes: 'Pull at 70°C — carry-over will finish it off',      category: 'poultry' },
+  { meat: 'Whole Turkey',             minC: 74,            notes: 'Probe into thigh without touching bone',            category: 'poultry' },
+  { meat: 'Gammon / Ham',             minC: 70, maxC: 74, notes: 'Safe at 70°C; 74°C for pull-through texture',       category: 'other' },
+  { meat: 'Steak — Rare',             minC: 49, maxC: 52, notes: 'Very red, warm centre — sear hard and fast',        category: 'other' },
+  { meat: 'Steak — Medium Rare',      minC: 55, maxC: 57, notes: 'Pink centre — the sweet spot for most steaks',      category: 'other' },
+  { meat: 'Steak — Medium',           minC: 60, maxC: 63, notes: 'Slightly pink, firmer texture',                     category: 'other' },
+  { meat: 'Steak — Well Done',        minC: 71,            notes: 'No pink remaining, more chew',                     category: 'other' },
+];
+
+interface SmokerTemp { style: string; minC: number; maxC: number; bestFor: string; }
+const smokerTemps: SmokerTemp[] = [
+  { style: 'Low & Slow',  minC: 107, maxC: 121, bestFor: 'Brisket, pulled pork, beef short ribs, lamb shoulder' },
+  { style: 'Medium Heat', minC: 135, maxC: 149, bestFor: 'Chicken quarters, pork loin, gammon' },
+  { style: 'Hot & Fast',  minC: 163, maxC: 177, bestFor: 'Chicken wings, sausages, fish' },
+];
+
+interface WoodPairing { wood: string; flavour: string; bestFor: string; }
+const woods: WoodPairing[] = [
+  { wood: 'Oak',      flavour: 'Medium, well-rounded',     bestFor: 'Brisket, beef ribs, pulled pork' },
+  { wood: 'Hickory',  flavour: 'Strong, smoky, bacon-like',bestFor: 'Ribs, pork shoulder, gammon' },
+  { wood: 'Cherry',   flavour: 'Mild, sweet, fruity',      bestFor: 'Chicken, pork, duck' },
+  { wood: 'Apple',    flavour: 'Light, delicate, sweet',   bestFor: 'Pork, chicken, fish' },
+  { wood: 'Mesquite', flavour: 'Bold, earthy, intense',    bestFor: 'Steak, beef brisket (use sparingly)' },
+  { wood: 'Alder',    flavour: 'Delicate, slightly sweet', bestFor: 'Fish, chicken, vegetables' },
+];
+
+function toF(c: number) { return Math.round(c * 1.8 + 32); }
+---
+
+<BaseLayout title="Smoking Temperature Guide">
+
+  <!-- Banner -->
+  <div class="fade-up -mx-4 sm:-mx-6 -mt-8 sm:-mt-12 mb-10 sm:mb-12 rounded-b-2xl overflow-hidden"
+    style="background: linear-gradient(135deg, #431407 0%, #9a3412 60%, #c2410c 100%);">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-16 flex items-end gap-5">
+      <span class="text-6xl sm:text-7xl drop-shadow-lg">🌡️</span>
+      <div>
+        <h1 class="font-serif text-4xl sm:text-5xl font-bold text-white leading-tight">Temperature Guide</h1>
+        <p class="text-white/80 mt-1 text-base sm:text-lg">Target internal temperatures for smoking and BBQ</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- °C / °F toggle -->
+  <div class="flex items-center justify-between mb-6 fade-up">
+    <a href={`${base}smoking`} class="text-sm text-brown-500 dark:text-cream-300 hover:text-terracotta-600 transition-colors flex items-center gap-1.5">
+      ← Back to Smoking
+    </a>
+    <div class="inline-flex rounded-lg border border-tan-200 dark:border-brown-700 overflow-hidden text-sm font-semibold">
+      <button id="btn-celsius" class="px-4 py-2 bg-brown-900 text-cream-100 transition-colors">°C</button>
+      <button id="btn-fahrenheit" class="px-4 py-2 bg-cream-50 dark:bg-brown-900 text-brown-700 dark:text-cream-200 hover:bg-tan-100 dark:hover:bg-brown-800 transition-colors">°F</button>
+    </div>
+  </div>
+
+  <!-- Stall note -->
+  <div class="fade-up mb-10 p-4 sm:p-5 bg-amber-50 dark:bg-brown-900 border border-amber-200 dark:border-amber-800/40 rounded-xl text-sm text-amber-800 dark:text-amber-400 leading-relaxed">
+    <strong>💡 The Stall:</strong> Brisket and pork shoulder typically stall between
+    <span class="temp-val font-bold" data-c="65" data-f="149">65°C</span> and
+    <span class="temp-val font-bold" data-c="75" data-f="167">75°C</span>
+    as moisture evaporating from the surface cools the meat. This can last 1–3 hours and is completely normal.
+    Wrap tightly in foil (the "Texas Crutch") to push through it, or wait it out for a better bark.
+  </div>
+
+  <!-- Internal temps -->
+  <section class="mb-12">
+    <h2 class="font-serif text-2xl font-bold text-brown-900 dark:text-cream-100 mb-6 fade-up">
+      Target Internal Temperatures
+    </h2>
+
+    <h3 class="font-serif text-lg font-semibold text-brown-700 dark:text-cream-200 mb-3 fade-up">🔥 BBQ &amp; Low &amp; Slow</h3>
+    <div class="overflow-x-auto rounded-xl border border-tan-200 dark:border-brown-700 mb-8 fade-up">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="bg-brown-900 text-cream-100">
+            <th class="text-left px-4 py-3 font-semibold">Meat</th>
+            <th class="px-4 py-3 font-semibold text-center">Target</th>
+            <th class="text-left px-4 py-3 font-semibold hidden sm:table-cell">Done When…</th>
+          </tr>
+        </thead>
+        <tbody>
+          {meatTemps.filter(m => m.category === 'bbq').map((m, i) => (
+            <tr class:list={['border-t border-tan-200 dark:border-brown-700', i % 2 === 0 ? 'bg-cream-50 dark:bg-brown-900' : 'bg-white dark:bg-brown-950']}>
+              <td class="px-4 py-3 font-medium text-brown-900 dark:text-cream-100">{m.meat}</td>
+              <td class="px-4 py-3 text-center">
+                <span
+                  class="inline-block bg-terracotta-100 dark:bg-terracotta-900/30 text-terracotta-800 dark:text-terracotta-300 font-bold px-3 py-1 rounded-full temp-display"
+                  data-min-c={m.minC}
+                  data-max-c={m.maxC}
+                >
+                  {m.maxC ? `${m.minC}–${m.maxC}°C` : `${m.minC}°C`}
+                </span>
+              </td>
+              <td class="px-4 py-3 text-brown-500 dark:text-cream-300 hidden sm:table-cell">{m.notes}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="font-serif text-lg font-semibold text-brown-700 dark:text-cream-200 mb-3 fade-up">🐔 Poultry</h3>
+    <div class="overflow-x-auto rounded-xl border border-tan-200 dark:border-brown-700 mb-8 fade-up">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="bg-brown-900 text-cream-100">
+            <th class="text-left px-4 py-3 font-semibold">Meat</th>
+            <th class="px-4 py-3 font-semibold text-center">Target</th>
+            <th class="text-left px-4 py-3 font-semibold hidden sm:table-cell">Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {meatTemps.filter(m => m.category === 'poultry').map((m, i) => (
+            <tr class:list={['border-t border-tan-200 dark:border-brown-700', i % 2 === 0 ? 'bg-cream-50 dark:bg-brown-900' : 'bg-white dark:bg-brown-950']}>
+              <td class="px-4 py-3 font-medium text-brown-900 dark:text-cream-100">{m.meat}</td>
+              <td class="px-4 py-3 text-center">
+                <span
+                  class="inline-block bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400 font-bold px-3 py-1 rounded-full temp-display"
+                  data-min-c={m.minC}
+                  data-max-c={m.maxC}
+                >
+                  {m.maxC ? `${m.minC}–${m.maxC}°C` : `${m.minC}°C`}
+                </span>
+              </td>
+              <td class="px-4 py-3 text-brown-500 dark:text-cream-300 hidden sm:table-cell">{m.notes}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="font-serif text-lg font-semibold text-brown-700 dark:text-cream-200 mb-3 fade-up">🥩 Other</h3>
+    <div class="overflow-x-auto rounded-xl border border-tan-200 dark:border-brown-700 mb-8 fade-up">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="bg-brown-900 text-cream-100">
+            <th class="text-left px-4 py-3 font-semibold">Meat</th>
+            <th class="px-4 py-3 font-semibold text-center">Target</th>
+            <th class="text-left px-4 py-3 font-semibold hidden sm:table-cell">Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {meatTemps.filter(m => m.category === 'other').map((m, i) => (
+            <tr class:list={['border-t border-tan-200 dark:border-brown-700', i % 2 === 0 ? 'bg-cream-50 dark:bg-brown-900' : 'bg-white dark:bg-brown-950']}>
+              <td class="px-4 py-3 font-medium text-brown-900 dark:text-cream-100">{m.meat}</td>
+              <td class="px-4 py-3 text-center">
+                <span
+                  class="inline-block bg-sage-100 dark:bg-sage-900/20 text-sage-700 dark:text-sage-400 font-bold px-3 py-1 rounded-full temp-display"
+                  data-min-c={m.minC}
+                  data-max-c={m.maxC}
+                >
+                  {m.maxC ? `${m.minC}–${m.maxC}°C` : `${m.minC}°C`}
+                </span>
+              </td>
+              <td class="px-4 py-3 text-brown-500 dark:text-cream-300 hidden sm:table-cell">{m.notes}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Smoker temperatures -->
+  <section class="mb-12">
+    <h2 class="font-serif text-2xl font-bold text-brown-900 dark:text-cream-100 mb-6 fade-up">Smoker Temperatures</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {smokerTemps.map((s, i) => (
+        <div class="fade-up rounded-xl border border-tan-200 dark:border-brown-700 p-5 bg-cream-50 dark:bg-brown-900" data-delay={i + 1}>
+          <p class="font-serif text-lg font-bold text-brown-900 dark:text-cream-100 mb-1">{s.style}</p>
+          <p class="text-2xl font-bold text-terracotta-600 dark:text-terracotta-400 mb-2 smoker-temp"
+            data-min-c={s.minC} data-max-c={s.maxC}>
+            {s.minC}–{s.maxC}°C
+          </p>
+          <p class="text-xs text-brown-500 dark:text-cream-300 leading-relaxed">{s.bestFor}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- Wood guide -->
+  <section class="mb-12">
+    <h2 class="font-serif text-2xl font-bold text-brown-900 dark:text-cream-100 mb-6 fade-up">Wood Pairing Guide</h2>
+    <div class="overflow-x-auto rounded-xl border border-tan-200 dark:border-brown-700 fade-up">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="bg-brown-900 text-cream-100">
+            <th class="text-left px-4 py-3 font-semibold">Wood</th>
+            <th class="text-left px-4 py-3 font-semibold">Flavour</th>
+            <th class="text-left px-4 py-3 font-semibold">Best For</th>
+          </tr>
+        </thead>
+        <tbody>
+          {woods.map((w, i) => (
+            <tr class:list={['border-t border-tan-200 dark:border-brown-700', i % 2 === 0 ? 'bg-cream-50 dark:bg-brown-900' : 'bg-white dark:bg-brown-950']}>
+              <td class="px-4 py-3 font-bold text-brown-900 dark:text-cream-100">{w.wood}</td>
+              <td class="px-4 py-3 text-brown-600 dark:text-cream-200">{w.flavour}</td>
+              <td class="px-4 py-3 text-brown-500 dark:text-cream-300">{w.bestFor}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <p class="text-xs text-center text-brown-400 dark:text-cream-300 fade-up pb-4">
+    Always use a quality digital probe thermometer. Let meat rest 15–30 minutes before slicing to redistribute the juices.
+  </p>
+
+</BaseLayout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    let isFahrenheit = false;
+
+    const btnC = document.getElementById('btn-celsius');
+    const btnF = document.getElementById('btn-fahrenheit');
+
+    function toF(c: number) { return Math.round(c * 1.8 + 32); }
+
+    function refreshTemps() {
+      document.querySelectorAll<HTMLElement>('.temp-display').forEach(el => {
+        const minC = parseInt(el.dataset.minC ?? '0', 10);
+        const maxC = el.dataset.maxC ? parseInt(el.dataset.maxC, 10) : null;
+        el.textContent = isFahrenheit
+          ? (maxC ? `${toF(minC)}–${toF(maxC)}°F` : `${toF(minC)}°F`)
+          : (maxC ? `${minC}–${maxC}°C` : `${minC}°C`);
+      });
+
+      document.querySelectorAll<HTMLElement>('.smoker-temp').forEach(el => {
+        const minC = parseInt(el.dataset.minC ?? '0', 10);
+        const maxC = parseInt(el.dataset.maxC ?? '0', 10);
+        el.textContent = isFahrenheit ? `${toF(minC)}–${toF(maxC)}°F` : `${minC}–${maxC}°C`;
+      });
+
+      document.querySelectorAll<HTMLElement>('.temp-val').forEach(el => {
+        el.textContent = isFahrenheit ? `${el.dataset.f}°F` : `${el.dataset.c}°C`;
+      });
+
+      const activeClass   = ['bg-brown-900', 'text-cream-100'];
+      const inactiveClass = ['bg-cream-50', 'dark:bg-brown-900', 'text-brown-700', 'dark:text-cream-200'];
+
+      if (isFahrenheit) {
+        btnC?.classList.remove(...activeClass); btnC?.classList.add(...inactiveClass);
+        btnF?.classList.add(...activeClass);    btnF?.classList.remove(...inactiveClass);
+      } else {
+        btnC?.classList.add(...activeClass);    btnC?.classList.remove(...inactiveClass);
+        btnF?.classList.remove(...activeClass); btnF?.classList.add(...inactiveClass);
+      }
+    }
+
+    btnC?.addEventListener('click', () => { isFahrenheit = false; refreshTemps(); });
+    btnF?.addEventListener('click', () => { isFahrenheit = true;  refreshTemps(); });
+  });
+</script>

@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import RecipeCard from '../../components/RecipeCard.astro';
 import { getCollection } from 'astro:content';
 
 export async function getStaticPaths() {
@@ -14,15 +15,24 @@ const { recipe } = Astro.props;
 const { Content } = await recipe.render();
 const { title, date, category, tags, image, servings, prepTime, cookTime, description } = recipe.data;
 
+// Related recipes — same category, excluding this one, up to 3
+const allRecipes = await getCollection('recipes');
+const related = allRecipes
+  .filter(r => r.data.category === category && r.slug !== recipe.slug)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+
 const rawBase = import.meta.env.BASE_URL;
 const base = rawBase.endsWith('/') ? rawBase : rawBase + '/';
 
 const categoryMeta: Record<string, { emoji: string; label: string }> = {
-  smoking:  { emoji: '🔥', label: 'Smoking' },
-  baking:   { emoji: '🍞', label: 'Baking' },
-  cooking:  { emoji: '🍳', label: 'Cooking' },
-  rubs:     { emoji: '🧂', label: 'Rubs' },
-  sauces:   { emoji: '🫙', label: 'Sauces' },
+  smoking:   { emoji: '🔥', label: 'Smoking' },
+  breads:    { emoji: '🍞', label: 'Breads' },
+  cakes:     { emoji: '🎂', label: 'Cakes' },
+  traybakes: { emoji: '🍫', label: 'Tray Bakes' },
+  cooking:   { emoji: '🍳', label: 'Cooking' },
+  rubs:      { emoji: '🧂', label: 'Rubs' },
+  sauces:    { emoji: '🫙', label: 'Sauces' },
 };
 
 const { emoji, label } = categoryMeta[category] ?? { emoji: '🍽️', label: category };
@@ -31,32 +41,61 @@ const { emoji, label } = categoryMeta[category] ?? { emoji: '🍽️', label: ca
 <BaseLayout title={title} description={description}>
 
   <!-- Breadcrumb -->
-  <nav class="text-sm text-brown-400 mb-6 flex items-center gap-1.5 flex-wrap">
+  <nav class="text-sm text-brown-400 dark:text-cream-300 mb-6 flex items-center gap-1.5 flex-wrap fade-up">
     <a href={base} class="hover:text-terracotta-600 transition-colors">Home</a>
     <span>/</span>
     <a href={`${base}${category}`} class="hover:text-terracotta-600 transition-colors capitalize">{label}</a>
     <span>/</span>
-    <span class="text-brown-700">{title}</span>
+    <span class="text-brown-700 dark:text-cream-200">{title}</span>
   </nav>
 
   <article class="max-w-3xl mx-auto">
 
     <!-- Hero image -->
     {image && (
-      <div class="rounded-2xl overflow-hidden mb-8 aspect-video shadow-md">
+      <div class="rounded-2xl overflow-hidden mb-8 aspect-video shadow-md fade-up">
         <img src={`${base}${image}`} alt={title} class="w-full h-full object-cover" />
       </div>
     )}
 
-    <!-- Title -->
-    <h1 class="font-serif text-4xl sm:text-5xl font-bold text-brown-900 leading-tight mb-4">{title}</h1>
+    <!-- Title + favourite -->
+    <div class="flex items-start gap-3 mb-3 fade-up">
+      <h1 class="font-serif text-4xl sm:text-5xl font-bold text-brown-900 dark:text-cream-100 leading-tight flex-1">{title}</h1>
+      <button
+        class="fav-btn flex-shrink-0 mt-1 p-2.5 rounded-xl border border-tan-200 dark:border-brown-700 hover:border-terracotta-400 dark:hover:border-terracotta-500 transition-all text-brown-400 dark:text-cream-300"
+        data-slug={recipe.slug}
+        aria-label="Favourite this recipe"
+      >
+        <svg class="fav-heart-empty w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+        </svg>
+        <svg class="fav-heart-filled w-5 h-5 hidden text-terracotta-500" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Star rating -->
+    <div class="flex items-center gap-2.5 mb-4 fade-up">
+      <span class="text-xs text-brown-400 dark:text-cream-300">Your rating:</span>
+      <div id="page-stars" class="flex gap-px" data-slug={recipe.slug}>
+        {[1,2,3,4,5].map(n => (
+          <button
+            class="star-btn text-xl leading-none text-tan-200 dark:text-brown-700 hover:text-yellow-400 dark:hover:text-yellow-400 transition-colors"
+            data-value={String(n)}
+            aria-label={`Rate ${n} star${n > 1 ? 's' : ''}`}
+          >★</button>
+        ))}
+      </div>
+      <span id="rating-label" class="text-xs text-brown-400 dark:text-cream-300"></span>
+    </div>
 
     {description && (
-      <p class="text-lg text-brown-600 leading-relaxed mb-6">{description}</p>
+      <p class="text-lg text-brown-600 dark:text-cream-200 leading-relaxed mb-6 fade-up">{description}</p>
     )}
 
     <!-- Meta strip -->
-    <div class="flex flex-wrap items-center gap-x-5 gap-y-2 py-4 border-y border-tan-200 mb-8 text-sm text-brown-600">
+    <div class="fade-up flex flex-wrap items-center gap-x-4 gap-y-2 py-4 border-y border-tan-200 dark:border-brown-700 mb-8 text-sm text-brown-600 dark:text-cream-200">
       <span class="flex items-center gap-1.5">{emoji} <span class="capitalize">{label}</span></span>
       {prepTime && <span>⏱ Prep: <strong>{prepTime}</strong></span>}
       {cookTime && <span>🔥 Cook: <strong>{cookTime}</strong></span>}
@@ -64,77 +103,110 @@ const { emoji, label } = categoryMeta[category] ?? { emoji: '🍽️', label: ca
       {tags && tags.length > 0 && (
         <div class="flex gap-1.5 flex-wrap">
           {tags.map(t => (
-            <span class="bg-tan-100 text-brown-600 px-2 py-0.5 rounded-full text-xs border border-tan-200">{t}</span>
+            <span class="bg-tan-100 dark:bg-brown-800 text-brown-600 dark:text-cream-200 px-2 py-0.5 rounded-full text-xs border border-tan-200 dark:border-brown-700">{t}</span>
           ))}
         </div>
       )}
-      <button onclick="window.print()" class="ml-auto text-xs text-brown-400 hover:text-terracotta-600 transition-colors flex items-center gap-1">
-        🖨️ Print
-      </button>
+      <div class="ml-auto flex items-center gap-2 flex-wrap">
+        <!-- Unit converter toggle -->
+        <button
+          id="unit-toggle"
+          class="flex items-center gap-1.5 text-xs font-semibold text-brown-500 dark:text-cream-300 hover:text-terracotta-600 dark:hover:text-terracotta-400 transition-colors px-3 py-1.5 rounded-lg border border-tan-200 dark:border-brown-700 hover:border-terracotta-400"
+        >
+          🌡️ <span id="unit-label">Imperial</span>
+        </button>
+        <!-- Cook mode -->
+        <button
+          id="cook-mode-btn"
+          class="flex items-center gap-1.5 text-xs font-semibold text-brown-500 dark:text-cream-300 hover:text-terracotta-600 dark:hover:text-terracotta-400 transition-colors px-3 py-1.5 rounded-lg border border-tan-200 dark:border-brown-700 hover:border-terracotta-400"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span id="cook-mode-label">Cook mode</span>
+        </button>
+        <button onclick="window.print()" class="text-xs text-brown-400 dark:text-cream-300 hover:text-terracotta-600 transition-colors flex items-center gap-1">
+          🖨️ Print
+        </button>
+      </div>
     </div>
 
-    <!-- Servings scaler -->
-    <div id="scaler" class="flex items-center gap-4 bg-cream-50 border border-tan-200 rounded-xl px-5 py-3 mb-8">
-      <span class="text-sm font-semibold text-brown-700 font-serif">Servings</span>
+    <!-- Servings scaler + shopping list -->
+    <div id="scaler" class="fade-up flex flex-wrap items-center gap-4 bg-cream-50 dark:bg-brown-900 border border-tan-200 dark:border-brown-700 rounded-xl px-5 py-3 mb-8">
+      <span class="text-sm font-semibold text-brown-700 dark:text-cream-200 font-serif">Servings</span>
       <div class="flex items-center gap-3">
         <button
           id="scale-down"
-          class="w-8 h-8 rounded-full bg-brown-800 text-cream-100 text-lg font-bold flex items-center justify-center hover:bg-terracotta-600 transition-colors"
+          class="w-8 h-8 rounded-full bg-brown-800 dark:bg-brown-700 text-cream-100 text-lg font-bold flex items-center justify-center hover:bg-terracotta-600 transition-colors"
           aria-label="Decrease servings"
         >−</button>
         <span
           id="servings-display"
           data-base={servings}
-          class="font-serif text-2xl font-bold text-brown-900 w-8 text-center tabular-nums"
+          class="font-serif text-2xl font-bold text-brown-900 dark:text-cream-100 w-8 text-center tabular-nums"
         >{servings}</span>
         <button
           id="scale-up"
-          class="w-8 h-8 rounded-full bg-brown-800 text-cream-100 text-lg font-bold flex items-center justify-center hover:bg-terracotta-600 transition-colors"
+          class="w-8 h-8 rounded-full bg-brown-800 dark:bg-brown-700 text-cream-100 text-lg font-bold flex items-center justify-center hover:bg-terracotta-600 transition-colors"
           aria-label="Increase servings"
         >+</button>
       </div>
-      <span class="text-xs text-brown-400">adjust ingredients below</span>
+      <span class="text-xs text-brown-400 dark:text-cream-300 flex-1">adjust ingredients below</span>
+      <button
+        id="add-to-list"
+        class="flex items-center gap-1.5 text-xs font-semibold text-brown-500 dark:text-cream-300 hover:text-terracotta-600 dark:hover:text-terracotta-400 transition-colors px-3 py-1.5 rounded-lg border border-tan-200 dark:border-brown-700 hover:border-terracotta-400 ml-auto"
+      >
+        🛒 Add to list
+      </button>
+    </div>
+
+    <!-- Cook mode banner -->
+    <div id="cook-banner" class="mb-6 px-5 py-3 bg-terracotta-100 dark:bg-brown-800 border border-terracotta-300 dark:border-terracotta-600 rounded-xl text-sm text-terracotta-800 dark:text-terracotta-300 items-center gap-2" style="display:none">
+      <span>👆</span>
+      <span>Tap each step to mark it active, tap again to mark it done.</span>
     </div>
 
     <!-- Recipe body -->
-    <div class="recipe-content prose prose-stone max-w-none prose-headings:font-serif prose-h2:border-b prose-h2:border-tan-200 prose-h2:pb-2 prose-a:text-terracotta-600 prose-img:rounded-xl prose-img:shadow-md">
+    <div class="recipe-content prose prose-stone max-w-none prose-headings:font-serif prose-h2:border-b prose-h2:border-tan-200 dark:prose-h2:border-brown-700 prose-h2:pb-2 prose-a:text-terracotta-600 prose-img:rounded-xl prose-img:shadow-md">
       <Content />
     </div>
 
+    <!-- Related recipes -->
+    {related.length > 0 && (
+      <section class="mt-16 pt-10 border-t border-tan-200 dark:border-brown-700">
+        <h2 class="font-serif text-2xl text-brown-800 dark:text-cream-100 mb-6 fade-up">
+          More {label} recipes
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          {related.map((r, i) => (
+            <RecipeCard
+              title={r.data.title}
+              slug={r.slug}
+              category={r.data.category}
+              date={r.data.date}
+              image={r.data.image}
+              cookTime={r.data.cookTime}
+              description={r.data.description}
+              tags={r.data.tags}
+              delay={(i + 1) as 1 | 2 | 3}
+            />
+          ))}
+        </div>
+      </section>
+    )}
+
   </article>
+
+  <!-- Toast notification -->
+  <div
+    id="toast"
+    class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-brown-900 text-cream-100 px-6 py-3 rounded-xl shadow-xl text-sm font-semibold z-[300] transition-opacity duration-300 opacity-0 pointer-events-none"
+  ></div>
+
 </BaseLayout>
 
 <script>
-  const display = document.getElementById('servings-display') as HTMLElement | null;
-  const downBtn = document.getElementById('scale-down') as HTMLButtonElement | null;
-  const upBtn   = document.getElementById('scale-up')   as HTMLButtonElement | null;
-
-  if (!display || !downBtn || !upBtn) throw new Error('Scaler elements missing');
-
-  const base = parseInt(display.dataset.base ?? '4', 10);
-  let current = base;
-
-  // Find ingredient list items — the <ul> immediately after <h2>Ingredients</h2>
-  function getIngredientItems(): ChildNode[][] {
-    const headings = document.querySelectorAll<HTMLElement>('.recipe-content h2');
-    let ingredientUl: HTMLUListElement | null = null;
-    headings.forEach(h => {
-      if (h.textContent?.toLowerCase().includes('ingredient')) {
-        const next = h.nextElementSibling;
-        if (next?.tagName === 'UL') ingredientUl = next as HTMLUListElement;
-      }
-    });
-    if (!ingredientUl) return [];
-
-    return Array.from((ingredientUl as HTMLUListElement).querySelectorAll<HTMLLIElement>('li')).map(li => {
-      // Collect only text nodes (not the checkbox input)
-      return Array.from(li.childNodes).filter(n => n.nodeType === Node.TEXT_NODE);
-    });
-  }
-
-  const textNodeGroups = getIngredientItems();
-  // Store original text values
-  const originals: string[][] = textNodeGroups.map(nodes => nodes.map(n => n.textContent ?? ''));
+  // ── Helpers ──────────────────────────────────────────────────────────────────
 
   const FRACTIONS: Array<[number, string]> = [
     [0.125, '⅛'], [0.25, '¼'], [0.333, '⅓'], [0.375, '⅜'],
@@ -149,35 +221,274 @@ const { emoji, label } = categoryMeta[category] ?? { emoji: '🍽️', label: ca
     for (const [val, sym] of FRACTIONS) {
       if (Math.abs(frac - val) < 0.04) return whole > 0 ? `${whole}${sym}` : sym;
     }
-    return n % 1 === 0 ? String(n) : n.toFixed(1);
+    return n.toFixed(1);
   }
 
   function scaleText(text: string, multiplier: number): string {
-    // Match integers, decimals, and simple fractions not preceded by letters or =/"
     return text.replace(/(?<![=\w/"])(\d+(?:\.\d+)?(?:\/\d+)?)/g, match => {
-      let val: number;
-      if (match.includes('/')) {
-        const [n, d] = match.split('/');
-        val = parseFloat(n) / parseFloat(d);
-      } else {
-        val = parseFloat(match);
-      }
+      const val = match.includes('/')
+        ? parseFloat(match.split('/')[0]) / parseFloat(match.split('/')[1])
+        : parseFloat(match);
       return formatNum(val * multiplier);
     });
   }
 
-  function update(newServings: number) {
-    if (newServings < 1) return;
-    current = newServings;
-    display.textContent = String(current);
-    const multiplier = current / base;
-    textNodeGroups.forEach((nodes, i) => {
-      nodes.forEach((node, j) => {
-        node.textContent = scaleText(originals[i][j], multiplier);
-      });
-    });
+  function toImperial(text: string): string {
+    return text
+      // Temperature: 180°C, 110 Celcius, 220C/200C
+      .replace(/(\d+(?:\.\d+)?)\s*(?:°[Cc]|[Cc](?:elcius|elsius)?(?=\b|\/| ))/g,
+        (_, n) => `${Math.round(parseFloat(n) * 1.8 + 32)}°F`)
+      // kg → lb
+      .replace(/(\d+(?:\.\d+)?)\s*kg\b/g,
+        (_, n) => `${(parseFloat(n) * 2.205).toFixed(1).replace(/\.0$/, '')}lb`)
+      // g → oz (not followed by a letter — avoids false match in words)
+      .replace(/(\d+(?:\.\d+)?)\s*g(?!\w)/g,
+        (_, n) => `${(parseFloat(n) / 28.35).toFixed(1).replace(/\.0$/, '')}oz`)
+      // ml → fl oz
+      .replace(/(\d+(?:\.\d+)?)\s*ml\b/g,
+        (_, n) => `${(parseFloat(n) / 29.574).toFixed(1).replace(/\.0$/, '')}fl oz`)
+      // cm → in
+      .replace(/(\d+(?:\.\d+)?)\s*cm\b/g,
+        (_, n) => `${(parseFloat(n) / 2.54).toFixed(1).replace(/\.0$/, '')}in`);
   }
 
-  downBtn.addEventListener('click', () => update(current - 1));
-  upBtn.addEventListener('click',   () => update(current + 1));
+  // ── Interface (used by shopping list) ────────────────────────────────────────
+  interface ShoppingItem {
+    id: string;
+    text: string;
+    recipe: string;
+    slug: string;
+    checked: boolean;
+  }
+
+  // ── Main init ─────────────────────────────────────────────────────────────────
+  document.addEventListener('astro:page-load', () => {
+    const display    = document.getElementById('servings-display') as HTMLElement | null;
+    const downBtn    = document.getElementById('scale-down')       as HTMLButtonElement | null;
+    const upBtn      = document.getElementById('scale-up')         as HTMLButtonElement | null;
+    const unitToggle = document.getElementById('unit-toggle')      as HTMLButtonElement | null;
+    const unitLabel  = document.getElementById('unit-label')       as HTMLElement | null;
+    const addToList  = document.getElementById('add-to-list')      as HTMLButtonElement | null;
+    const toast      = document.getElementById('toast')            as HTMLElement | null;
+    const content    = document.querySelector<HTMLElement>('.recipe-content');
+
+    const baseServings   = parseInt(display?.dataset.base ?? '4', 10);
+    let currentServings  = baseServings;
+    let isImperial       = localStorage.getItem('units') === 'imperial';
+
+    // ── Collect ALL text nodes in recipe content ────────────────────────────
+    const allNodes:     Text[]   = [];
+    const ingredientSet          = new Set<Text>();
+
+    if (content) {
+      const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT);
+      let node: Node | null;
+      while ((node = walker.nextNode())) {
+        const t = node as Text;
+        if (t.textContent?.trim()) allNodes.push(t);
+      }
+
+      // Mark ingredient-list text nodes for scaling
+      content.querySelectorAll<HTMLElement>('h2').forEach(h2 => {
+        if (!h2.textContent?.toLowerCase().includes('ingredient')) return;
+        let sib: Element | null = h2.nextElementSibling;
+        while (sib && sib.tagName !== 'H2') {
+          if (sib.tagName === 'UL') {
+            const iw = document.createTreeWalker(sib, NodeFilter.SHOW_TEXT);
+            let in2: Node | null;
+            while ((in2 = iw.nextNode())) {
+              const t = in2 as Text;
+              if (t.textContent?.trim()) ingredientSet.add(t);
+            }
+          }
+          sib = sib.nextElementSibling;
+        }
+      });
+    }
+
+    const allOriginals  = allNodes.map(n => n.textContent ?? '');
+    const isIngredient  = allNodes.map(n => ingredientSet.has(n));
+
+    // ── Unified render ──────────────────────────────────────────────────────
+    function render() {
+      const mult = currentServings / baseServings;
+      if (display) display.textContent = String(currentServings);
+      allNodes.forEach((node, i) => {
+        let text = allOriginals[i];
+        if (isIngredient[i]) text = scaleText(text, mult);
+        if (isImperial)      text = toImperial(text);
+        node.textContent = text;
+      });
+    }
+
+    // Set unit label, then render (applies imperial if previously selected)
+    if (unitLabel) unitLabel.textContent = isImperial ? 'Metric' : 'Imperial';
+    render();
+
+    // Scaler
+    downBtn?.addEventListener('click', () => { if (currentServings > 1) { currentServings--; render(); } });
+    upBtn?.addEventListener('click',   () => { currentServings++; render(); });
+
+    // Unit toggle
+    unitToggle?.addEventListener('click', () => {
+      isImperial = !isImperial;
+      localStorage.setItem('units', isImperial ? 'imperial' : 'metric');
+      if (unitLabel) unitLabel.textContent = isImperial ? 'Metric' : 'Imperial';
+      render();
+    });
+
+    // ── Star ratings ────────────────────────────────────────────────────────
+    const starsEl   = document.getElementById('page-stars')   as HTMLElement | null;
+    const ratingLbl = document.getElementById('rating-label') as HTMLElement | null;
+
+    if (starsEl) {
+      const slug     = starsEl.dataset.slug ?? '';
+      const starBtns = Array.from(starsEl.querySelectorAll<HTMLButtonElement>('.star-btn'));
+
+      function renderStars(n: number) {
+        starBtns.forEach((btn, i) => {
+          const filled = i < n;
+          btn.classList.toggle('text-yellow-400',  filled);
+          btn.classList.toggle('dark:text-yellow-400', filled);
+          btn.classList.toggle('text-tan-200',     !filled);
+          btn.classList.toggle('dark:text-brown-700', !filled);
+        });
+        if (ratingLbl) ratingLbl.textContent = n > 0 ? `${n} / 5` : '';
+      }
+
+      const savedRating = (JSON.parse(localStorage.getItem('ratings') ?? '{}') as Record<string, number>)[slug] ?? 0;
+      renderStars(savedRating);
+
+      starBtns.forEach((btn, i) => {
+        btn.addEventListener('mouseenter', () => renderStars(i + 1));
+        btn.addEventListener('mouseleave', () => {
+          const current = (JSON.parse(localStorage.getItem('ratings') ?? '{}') as Record<string, number>)[slug] ?? 0;
+          renderStars(current);
+        });
+        btn.addEventListener('click', () => {
+          const all = JSON.parse(localStorage.getItem('ratings') ?? '{}') as Record<string, number>;
+          all[slug] = i + 1;
+          localStorage.setItem('ratings', JSON.stringify(all));
+          renderStars(i + 1);
+        });
+      });
+    }
+
+    // ── Shopping list ───────────────────────────────────────────────────────
+    addToList?.addEventListener('click', () => {
+      const recipeTitle = document.querySelector<HTMLHeadingElement>('h1')?.textContent?.trim() ?? '';
+      const currentSlug = document.querySelector<HTMLElement>('#page-stars')?.dataset.slug ?? '';
+
+      // Collect ingredient items from DOM (current displayed text)
+      const items: string[] = [];
+      content?.querySelectorAll<HTMLElement>('h2').forEach(h2 => {
+        if (!h2.textContent?.toLowerCase().includes('ingredient')) return;
+        let sib: Element | null = h2.nextElementSibling;
+        while (sib && sib.tagName !== 'H2') {
+          if (sib.tagName === 'UL') {
+            sib.querySelectorAll<HTMLLIElement>('li').forEach(li => {
+              const text = Array.from(li.childNodes)
+                .filter(n => !(n.nodeType === Node.ELEMENT_NODE && (n as Element).tagName === 'INPUT'))
+                .map(n => n.textContent ?? '')
+                .join('')
+                .replace(/\[|\]/g, '') // strip link brackets if any remain
+                .trim();
+              if (text) items.push(text);
+            });
+          }
+          sib = sib.nextElementSibling;
+        }
+      });
+
+      if (items.length === 0) return;
+
+      const existing: ShoppingItem[] = JSON.parse(localStorage.getItem('shopping-list') ?? '[]');
+      const filtered  = existing.filter(i => i.slug !== currentSlug);
+      const newItems: ShoppingItem[] = items.map(text => ({
+        id: Math.random().toString(36).slice(2),
+        text, recipe: recipeTitle, slug: currentSlug, checked: false,
+      }));
+      const updated = [...filtered, ...newItems];
+      localStorage.setItem('shopping-list', JSON.stringify(updated));
+
+      // Update cart badge
+      const badge = document.getElementById('cart-badge') as HTMLElement | null;
+      if (badge) {
+        const count = updated.filter(i => !i.checked).length;
+        badge.textContent = String(count);
+        badge.style.display = '';
+      }
+
+      // Toast
+      if (toast) {
+        toast.textContent = `✓ ${items.length} ingredient${items.length > 1 ? 's' : ''} added to shopping list`;
+        toast.classList.remove('opacity-0');
+        setTimeout(() => toast.classList.add('opacity-0'), 2500);
+      }
+    });
+
+    // ── Cook mode ──────────────────────────────────────────────────────────
+    const cookBtn    = document.getElementById('cook-mode-btn');
+    const cookLabel  = document.getElementById('cook-mode-label');
+    const cookBanner = document.getElementById('cook-banner') as HTMLElement | null;
+    const article    = document.querySelector('article');
+
+    if (!cookBtn || !article) return;
+
+    let cookModeOn = false;
+    let wakeLock: WakeLockSentinel | null = null;
+    let activeStep: HTMLLIElement | null  = null;
+
+    function handleStepClick(step: HTMLLIElement, allSteps: HTMLLIElement[], idx: number) {
+      if (!cookModeOn) return;
+      if (step.classList.contains('cook-active')) {
+        step.classList.replace('cook-active', 'cook-done');
+        const next = allSteps[idx + 1];
+        if (next) {
+          next.classList.add('cook-active');
+          activeStep = next;
+          next.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          activeStep = null;
+        }
+      } else if (step.classList.contains('cook-done')) {
+        step.classList.replace('cook-done', 'cook-active');
+        activeStep?.classList.remove('cook-active');
+        activeStep = step;
+      } else {
+        activeStep?.classList.remove('cook-active');
+        step.classList.add('cook-active');
+        activeStep = step;
+      }
+    }
+
+    async function enableCookMode() {
+      cookModeOn = true;
+      if (cookLabel)  cookLabel.textContent = 'Exit cook mode';
+      if (cookBanner) cookBanner.style.display = 'flex';
+      article.classList.add('cook-mode');
+      try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (_) {}
+      const steps = Array.from(article.querySelectorAll<HTMLLIElement>('.recipe-content ol > li'));
+      if (steps.length === 0) return;
+      steps[0].classList.add('cook-active');
+      activeStep = steps[0];
+      steps.forEach((step, i) =>
+        step.addEventListener('click', () => handleStepClick(step, steps, i))
+      );
+    }
+
+    async function disableCookMode() {
+      cookModeOn = false;
+      if (cookLabel)  cookLabel.textContent = 'Cook mode';
+      if (cookBanner) cookBanner.style.display = 'none';
+      article.classList.remove('cook-mode');
+      article.querySelectorAll<HTMLLIElement>('ol > li').forEach(s =>
+        s.classList.remove('cook-active', 'cook-done')
+      );
+      activeStep = null;
+      if (wakeLock) { await wakeLock.release(); wakeLock = null; }
+    }
+
+    cookBtn.addEventListener('click', () => cookModeOn ? disableCookMode() : enableCookMode());
+  });
 </script>

@@ -24,6 +24,18 @@ const categoryEmoji: Record<string, string> = {
   breads: '🍞', cooking: '🍳', rubs: '🧂', sauces: '🫙',
 };
 
+// Featured rotation candidates — recipes with images, up to 6
+const featuredCandidates = sorted
+  .filter(r => r.data.image)
+  .slice(0, 6)
+  .map(r => ({
+    slug: r.slug,
+    title: r.data.title,
+    description: r.data.description ?? '',
+    image: r.data.image as string,
+    category: r.data.category,
+  }));
+
 const featured = sorted.find(r => r.data.image) ?? sorted[0];
 const DEFAULT_SHOW = 9;
 ---
@@ -32,15 +44,22 @@ const DEFAULT_SHOW = 9;
 
   <!-- Hero spotlight -->
   {featured && (
-    <section class="mb-12 fade-up">
+    <section
+      id="hero-section"
+      class="mb-12 fade-up"
+      data-candidates={JSON.stringify(featuredCandidates)}
+      data-base={base}
+    >
       <a
+        id="hero-link"
         href={`${base}recipes/${featured.slug}`}
         class="group relative block w-full rounded-2xl overflow-hidden shadow-xl border border-tan-200 dark:border-brown-700"
-        style="min-height: 280px;"
+        style="min-height: 280px; transition: opacity 0.4s ease;"
       >
         {featured.data.image ? (
           <>
             <img
+              id="hero-img"
               src={`${base}${featured.data.image}`}
               alt={featured.data.title}
               class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -54,17 +73,35 @@ const DEFAULT_SHOW = 9;
         )}
         <div class="relative flex flex-col justify-end h-full p-6 sm:p-8" style="min-height: 280px;">
           <span class="inline-block text-xs font-semibold uppercase tracking-widest text-terracotta-300 mb-2">Featured recipe</span>
-          <h2 class="font-serif text-3xl sm:text-4xl font-bold text-cream-100 leading-tight mb-2 group-hover:text-terracotta-200 transition-colors">
+          <h2 id="hero-title" class="font-serif text-3xl sm:text-4xl font-bold text-cream-100 leading-tight mb-2 group-hover:text-terracotta-200 transition-colors">
             {featured.data.title}
           </h2>
           {featured.data.description && (
-            <p class="text-cream-200 text-sm sm:text-base max-w-xl line-clamp-2 opacity-90">{featured.data.description}</p>
+            <p id="hero-desc" class="text-cream-200 text-sm sm:text-base max-w-xl line-clamp-2 opacity-90">{featured.data.description}</p>
           )}
           <span class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-terracotta-300 group-hover:gap-3 transition-all">
             View recipe <span>→</span>
           </span>
         </div>
       </a>
+
+      <!-- Rotation dots (only shown when there are multiple candidates) -->
+      {featuredCandidates.length > 1 && (
+        <div class="flex justify-center items-center gap-2 mt-3">
+          {featuredCandidates.map((_, i) => (
+            <button
+              class:list={[
+                'hero-dot rounded-full transition-all duration-300 cursor-pointer',
+                i === 0
+                  ? 'w-5 h-2 bg-terracotta-500'
+                  : 'w-2 h-2 bg-tan-200 dark:bg-brown-700 hover:bg-terracotta-300'
+              ]}
+              data-idx={String(i)}
+              aria-label={`Show featured recipe ${i + 1}`}
+            />
+          ))}
+        </div>
+      )}
     </section>
   )}
 
@@ -83,7 +120,6 @@ const DEFAULT_SHOW = 9;
         />
         <span id="search-count" class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-brown-400 dark:text-cream-300 hidden"></span>
       </div>
-      <!-- Favourites filter -->
       <button
         id="fav-filter"
         aria-label="Show favourites"
@@ -152,24 +188,23 @@ const DEFAULT_SHOW = 9;
 </BaseLayout>
 
 <script>
-  const input       = document.getElementById('search') as HTMLInputElement;
-  const cards       = document.querySelectorAll<HTMLElement>('.recipe-card');
-  const catSection  = document.getElementById('cat-section');
-  const sectionTitle = document.getElementById('section-title');
-  const searchCount = document.getElementById('search-count');
-  const noResults   = document.getElementById('no-results');
-  const noFavs      = document.getElementById('no-favourites');
-  const favFilter   = document.getElementById('fav-filter');
-  const favEmpty    = document.getElementById('fav-filter-heart-empty');
-  const favFilled   = document.getElementById('fav-filter-heart-filled');
   const DEFAULT_SHOW = 9;
+
+  // ── Search + Favourites ─────────────────────────────────────────────────────
+  const input        = document.getElementById('search') as HTMLInputElement;
+  const cards        = document.querySelectorAll<HTMLElement>('.recipe-card');
+  const catSection   = document.getElementById('cat-section');
+  const sectionTitle = document.getElementById('section-title');
+  const searchCount  = document.getElementById('search-count');
+  const noResults    = document.getElementById('no-results');
+  const noFavs       = document.getElementById('no-favourites');
+  const favFilter    = document.getElementById('fav-filter');
+  const favEmpty     = document.getElementById('fav-filter-heart-empty');
+  const favFilled    = document.getElementById('fav-filter-heart-filled');
 
   let favMode = false;
 
-  // Hide cards beyond default on load
-  cards.forEach((card, i) => {
-    if (i >= DEFAULT_SHOW) card.classList.add('hidden');
-  });
+  cards.forEach((card, i) => { if (i >= DEFAULT_SHOW) card.classList.add('hidden'); });
 
   function showDefault() {
     catSection?.classList.remove('hidden');
@@ -180,30 +215,23 @@ const DEFAULT_SHOW = 9;
     cards.forEach((card, i) => card.classList.toggle('hidden', i >= DEFAULT_SHOW));
   }
 
-  // ── Search ──────────────────────────────────────────────────────────────────
   input?.addEventListener('input', () => {
     const q = input.value.toLowerCase().trim();
-
-    // Exit fav mode when searching
     if (favMode) {
       favMode = false;
       favEmpty?.classList.remove('hidden');
       favFilled?.classList.add('hidden');
       favFilter?.classList.remove('border-terracotta-400');
     }
-
     if (!q) { showDefault(); return; }
-
     catSection?.classList.add('hidden');
     if (sectionTitle) sectionTitle.textContent = 'Search results';
-
     let count = 0;
     cards.forEach(card => {
       const match = (card.dataset.search ?? '').includes(q);
       card.classList.toggle('hidden', !match);
       if (match) { card.classList.add('visible'); count++; }
     });
-
     if (searchCount) {
       searchCount.textContent = count > 0 ? `${count} found` : '';
       searchCount.classList.toggle('hidden', count === 0);
@@ -212,32 +240,95 @@ const DEFAULT_SHOW = 9;
     noFavs?.classList.add('hidden');
   });
 
-  // ── Favourites filter ───────────────────────────────────────────────────────
   favFilter?.addEventListener('click', () => {
     favMode = !favMode;
-
     favEmpty?.classList.toggle('hidden', favMode);
     favFilled?.classList.toggle('hidden', !favMode);
     favFilter.classList.toggle('border-terracotta-400', favMode);
     favFilter.classList.toggle('dark:border-terracotta-500', favMode);
-
     if (input) input.value = '';
     if (searchCount) { searchCount.textContent = ''; searchCount.classList.add('hidden'); }
-
     if (!favMode) { showDefault(); return; }
-
     const favs = JSON.parse(localStorage.getItem('fav-recipes') ?? '[]') as string[];
     catSection?.classList.add('hidden');
     if (sectionTitle) sectionTitle.textContent = 'Favourites';
-
     let count = 0;
     cards.forEach(card => {
       const match = favs.includes(card.dataset.slug ?? '');
       card.classList.toggle('hidden', !match);
       if (match) { card.classList.add('visible'); count++; }
     });
-
     noFavs?.classList.toggle('hidden', count > 0);
     noResults?.classList.add('hidden');
   });
+
+  // ── Featured hero rotation ──────────────────────────────────────────────────
+  let rotateTimer: ReturnType<typeof setInterval> | null = null;
+
+  function initRotation() {
+    const section = document.getElementById('hero-section');
+    if (!section) return;
+
+    interface Candidate { slug: string; title: string; description: string; image: string; }
+    const candidates: Candidate[] = JSON.parse(section.dataset.candidates ?? '[]');
+    const base = section.dataset.base ?? '/';
+
+    if (candidates.length <= 1) return;
+
+    const heroLink  = document.getElementById('hero-link')  as HTMLAnchorElement | null;
+    const heroImg   = document.getElementById('hero-img')   as HTMLImageElement | null;
+    const heroTitle = document.getElementById('hero-title') as HTMLElement | null;
+    const heroDesc  = document.getElementById('hero-desc')  as HTMLElement | null;
+    const dots      = document.querySelectorAll<HTMLElement>('.hero-dot');
+
+    let idx = 0;
+
+    function setActiveDot(active: number) {
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('w-5',             i === active);
+        dot.classList.toggle('bg-terracotta-500', i === active);
+        dot.classList.toggle('w-2',             i !== active);
+        dot.classList.toggle('bg-tan-200',      i !== active);
+        dot.classList.toggle('dark:bg-brown-700', i !== active);
+      });
+    }
+
+    function goTo(newIdx: number) {
+      if (!heroLink) return;
+      heroLink.style.opacity = '0';
+      setTimeout(() => {
+        const r = candidates[newIdx];
+        heroLink.href = base + 'recipes/' + r.slug;
+        if (heroImg)   { heroImg.src = base + r.image; heroImg.alt = r.title; }
+        if (heroTitle) heroTitle.textContent = r.title;
+        if (heroDesc)  heroDesc.textContent = r.description;
+        setActiveDot(newIdx);
+        heroLink.style.opacity = '1';
+      }, 400);
+    }
+
+    function startTimer() {
+      rotateTimer = setInterval(() => {
+        idx = (idx + 1) % candidates.length;
+        goTo(idx);
+      }, 10000);
+    }
+
+    dots.forEach((dot, i) => {
+      dot.addEventListener('click', () => {
+        if (rotateTimer) clearInterval(rotateTimer);
+        idx = i;
+        goTo(idx);
+        startTimer();
+      });
+    });
+
+    startTimer();
+  }
+
+  document.addEventListener('astro:before-preparation', () => {
+    if (rotateTimer) { clearInterval(rotateTimer); rotateTimer = null; }
+  });
+
+  document.addEventListener('astro:page-load', initRotation);
 </script>

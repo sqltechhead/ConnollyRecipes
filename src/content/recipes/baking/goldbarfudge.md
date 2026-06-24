@@ -9,13 +9,14 @@ servings: 4
 ## Ingredients
 - [ ] 397g Tin Condensed Milk
 - [ ] 600g White Chocolate
-- [ ] 2tsp Vanilla Extract
+- [ ] 2 tsp Vanilla Extract
 - [ ] 14 Gold Bars
 
 ## Method
-- Line a 24cm Square tin with baking paper
-- Put the condensed milk, white chocolate and vanilla extract in a saucepan and heat slowly
-- Once all combined take off the heat
-- Cut up half of the gold bars and mix with the mixture
-- Spoon into the tin and flatten
-- Decide how many slices you want from the mix and push a gold bar or half a gold bar whatever you like into those rough slices. This way when you cut you'll have a nice solid bit of gold bar to present.
+1. Line a 24cm square tin with baking paper.
+2. Put the condensed milk, white chocolate and vanilla extract in a saucepan and heat slowly, stirring until combined.
+3. Once fully combined, take off the heat.
+4. Cut up half of the gold bars and stir into the mixture.
+5. Spoon into the tin and flatten evenly.
+6. Decide how many slices you want and press a whole or half gold bar into each portion — this way when you cut, every slice has a solid piece of gold bar running through it.
+7. Refrigerate until set, then cut into slices and serve.

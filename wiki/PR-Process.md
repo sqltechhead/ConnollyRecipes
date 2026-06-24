@@ -36,9 +36,9 @@
 
 ## Merging
 
-- Merge once the checklist is complete and the build is green
-- Delete the branch after merging
-- GitHub Actions will automatically build and deploy to [connollyrecipes.co.uk](https://connollyrecipes.co.uk) within ~2 minutes
+1. Confirm the checklist is complete and the build is green
+2. Merge the PR into `master`
+3. Delete the branch — GitHub Actions will automatically build and deploy to [connollyrecipes.co.uk](https://connollyrecipes.co.uk) within ~2 minutes
 
 ## Hotfixes
 
